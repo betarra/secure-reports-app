@@ -1,12 +1,20 @@
 import os
+import json
 from flask import Flask, render_template, request, redirect, url_for
 import firebase_admin
 from firebase_admin import credentials, firestore
 
 app = Flask(__name__)
 
-# تهيئة الاتصال بـ Firebase باستخدام ملف المفتاح الذي وضعناه
-cred = credentials.Certificate("firebase_key.json")
+# طريقة آمنة للتعرف على المفتاح سواء محلياً أو على Render
+if 'FIREBASE_KEY_JSON' in os.environ:
+    # على سيرفر Render: نقرأ المفتاح من متغيرات البيئة
+    key_dict = json.loads(os.environ['FIREBASE_KEY_JSON'])
+    cred = credentials.Certificate(key_dict)
+else:
+    # محلياً على جهازك: نقرأه من الملف الموجود بجوار الكود
+    cred = credentials.Certificate("firebase_key.json")
+
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
