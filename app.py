@@ -22,9 +22,8 @@ except ValueError:
 
 db = firestore.client()
 
-# الدالة المعدلة بدقة لالتقاط الملف من أي من الحقلين وتحويله إلى Base64
+# دالة ذكية لالتقاط الملف من أي حقل وتحويله إلى Base64
 def handle_file_upload(request_files):
-    # نبحث في الحقلين الموجودين في نموذج HTML الخاص بك
     for field_name in ['media_file', 'location_image', 'media', 'image', 'file', 'attachment']:
         file_storage = request_files.get(field_name)
         if file_storage and file_storage.filename != '':
@@ -59,7 +58,6 @@ def index():
         facebook = request.form.get('facebook')
         phone = request.form.get('phone')
         
-        # استدعاء دالة معالجة الملفات المحدثة
         media_data = handle_file_upload(request.files)
         
         report_data = {
@@ -76,7 +74,6 @@ def index():
             'timestamp': firestore.SERVER_TIMESTAMP
         }
         
-        # حفظ البيانات في فايربيس
         db.collection('reports').add(report_data)
         return redirect(url_for('index'))
         
@@ -120,7 +117,8 @@ def report_detail(report_id):
             
             raw_media = report.get('media') or report.get('image') or report.get('location_image')
             
-            if raw_media and str(raw_media).strip().lower() not in ['none', '', 'jpg', 'jpeg', 'png']:
+            # تنظيف البيانات للتأكد من أنها Base64 أو رابط حقيقي صالح فقط
+            if raw_media and (str(raw_media).startswith('data:image') or str(raw_media).startswith('http://') or str(raw_media).startswith('https://')):
                 report['clean_media'] = str(raw_media).strip()
             else:
                 report['clean_media'] = None
