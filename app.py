@@ -55,15 +55,15 @@ def index():
             'affiliation': affiliation,
             'facebook': facebook,
             'phone': phone,
-            'media': filename,       # <--- هذا هو السطر المهم الذي كان ناقصاً لتخزين اسم الملف
-            'image': filename,       # <--- أضفناه كاحتياط لتتطابق مع أي قراءة قديمة في قالب العرض
+            'media': filename,       
+            'image': filename,       
             'status': 'قيد المعالجة',
             'timestamp': firestore.SERVER_TIMESTAMP
         }
         
         # حفظ البيانات في فايربيس
         db.collection('reports').add(report_data)
-        return redirect(url_for('index')) # أو توجيه لصفحة النجاح حسب تصميمك
+        return redirect(url_for('index'))
         
     return render_template('report.html')
 
@@ -102,6 +102,14 @@ def report_detail(report_id):
         if doc.exists:
             report = doc.to_dict()
             report['id'] = doc.id
+            
+            # معالجة آمنة لاسم الملف لضمان قراءته بشكل صحيح في قالب العرض
+            raw_media = report.get('media') or report.get('image') or report.get('location_image') or report.get('photo') or report.get('file') or report.get('attachment')
+            if raw_media and str(raw_media).lower() not in ['none', '', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'jpg.1', 'jpeg.1']:
+                report['clean_media'] = str(raw_media)
+            else:
+                report['clean_media'] = None
+                
             return render_template('report_detail.html', report=report)
         return "البلاغ غير موجود في قاعدة البيانات", 404
     except Exception as e:
