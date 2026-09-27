@@ -7,7 +7,7 @@ from firebase_admin import credentials, firestore
 
 app = Flask(__name__)
 
-# إعداد مجلد الرفع المحلي للصور (إن لزم)
+# إعداد مجلد الرفع المحلي للصور والمرفقات
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -43,8 +43,8 @@ def index():
         facebook = request.form.get('facebook')
         phone = request.form.get('phone')
         
-        # التقاط الملف أو الصورة المرفقة إن وجدت
-        media_file = request.files.get('media') or request.files.get('image') or request.files.get('location_image')
+        # التقاط الملف أو الصورة المرفقة من الحقول الموجودة في report.html
+        media_file = request.files.get('media_file') or request.files.get('location_image') or request.files.get('media') or request.files.get('image')
         filename = handle_file_upload(media_file)
         
         report_data = {
@@ -60,7 +60,7 @@ def index():
         }
         
         if filename:
-            report_data['media'] = filename  # تخزين اسم الملف في قاعدة البيانات
+            report_data['media'] = filename  # تخزين اسم الملف الصحيح في قاعدة البيانات
             
         db.collection('reports').add(report_data)
         return redirect(url_for('index'))
@@ -78,7 +78,7 @@ def submit_report():
     facebook = request.form.get('facebook')
     phone = request.form.get('phone')
     
-    media_file = request.files.get('media') or request.files.get('image') or request.files.get('location_image')
+    media_file = request.files.get('media_file') or request.files.get('location_image') or request.files.get('media') or request.files.get('image')
     filename = handle_file_upload(media_file)
     
     report_data = {
@@ -126,7 +126,7 @@ def delete_report(report_id):
     db.collection('reports').document(report_id).delete()
     return redirect(url_for('admin_panel'))
 
-# مسار لعرض تفاصيل بلاغ محدد (تم تصحيحه ليعرض ملف الـ HTML الخاص بالتفاصيل بداخل العرض)
+# مسار لعرض تفاصيل بلاغ محدد
 @app.route('/report/<report_id>')
 def report_detail(report_id):
     try:
@@ -137,9 +137,9 @@ def report_detail(report_id):
             return render_template('report_detail.html', report=report)
         return "البلاغ غير موجود في قاعدة البيانات", 404
     except Exception as e:
-        # هذه الخطوة ستطبع الخطأ الحقيقي مباشرة على الشاشة لعرف سببه بدقة
         import traceback
         return f"<pre style='color: red; direction: ltr; padding: 20px;'>{traceback.format_exc()}</pre>", 500
+
 # مسار التصدير
 @app.route('/export')
 def export_reports():
