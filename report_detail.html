@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -41,22 +42,23 @@
         <div class="info-row"><strong>رقم الهاتف:</strong> {{ report.phone }}</div>
         <div class="info-row"><strong>الحالة:</strong> {{ report.status or 'قيد المعالجة' }}</div>
 
-        {% set media_file = report.media or report.image or report.location_image or report.photo or report.file or report.attachment %}
+        {% set raw_media = report.media or report.image or report.location_image or report.photo or report.file or report.attachment %}
         
-        {% if media_file %}
+        {# نتأكد أن الحقلي ليس مجرد صيغة تالفة قديمة مثل jpg أو jpg.1 #}
+        {% if raw_media and raw_media|lower not in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'jpg.1', 'jpeg.1'] and raw_media|length > 4 %}
         <div class="media-box">
             <strong>الملف أو الصورة المرفقة:</strong><br>
-            {% if media_file.lower().endswith(('mp4', 'mov', 'avi', 'mkv', 'webm')) %}
-                <video controls src="{{ media_file if media_file.startswith('http') else url_for('static', filename='uploads/' + media_file) }}"></video>
+            {% if raw_media.lower().endswith(('mp4', 'mov', 'avi', 'mkv', 'webm')) %}
+                <video controls src="{{ raw_media if raw_media.startswith('http') else url_for('static', filename='uploads/' + raw_media) }}"></video>
             {% else %}
-                <img src="{{ media_file if media_file.startswith('http') else url_for('static', filename='uploads/' + media_file) }}" alt="صورة البلاغ" onerror="this.onerror=null; this.src='{{ url_for('static', filename='uploads/app_logo.jpg') }}';">
+                <img src="{{ raw_media if raw_media.startswith('http') else url_for('static', filename='uploads/' + raw_media) }}" alt="صورة البلاغ" onerror="this.onerror=null; this.style.display='none';">
             {% endif %}
             <br><br>
-            <a href="{{ media_file if media_file.startswith('http') else url_for('static', filename='uploads/' + media_file) }}" download class="btn btn-download" target="_blank">تحميل الملف المرفق للاب توب</a>
+            <a href="{{ raw_media if raw_media.startswith('http') else url_for('static', filename='uploads/' + raw_media) }}" download class="btn btn-download" target="_blank">تحميل الملف المرفق للاب توب</a>
         </div>
         {% else %}
         <div style="margin-top: 15px; color: #9ca3af; font-size: 14px; background: #252525; padding: 10px; border-radius: 5px;">
-            ملاحظة: هذا البلاغ لا يحتوي على ملف مرفق.
+            ملاحظة: هذا البلاغ لا يحتوي على ملف مرفق حقيقي.
         </div>
         {% endif %}
 
