@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ملف البلاغ الكامل</title>
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='uploads/app_logo.jpg') }}">
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: Tahoma, sans-serif; padding: 30px; }
+        .card { max-width: 700px; background: #1e1e1e; border: 1px solid #333; padding: 30px; border-radius: 10px; margin: auto; }
+        h2 { color: #d97706; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .info-row { margin-bottom: 15px; font-size: 16px; }
+        .info-row strong { color: #9ca3af; display: inline-block; width: 150px; }
+        .media-box { margin-top: 20px; text-align: center; background: #252525; padding: 15px; border-radius: 6px; }
+        img, video { max-width: 100%; max-height: 300px; border-radius: 6px; border: 1px solid #444; margin-top: 10px; display: block; margin-left: auto; margin-right: auto; }
+        .btn-container { margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { padding: 10px 20px; background: #d97706; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 15px; text-decoration: none; text-align: center; display: inline-block; }
+        .btn-back { background: #4b5563; }
+        .btn-download { background: #059669; }
+        .btn:hover { opacity: 0.9; }
+        
+        @media print {
+            body { background: white; color: black; }
+            .card { border: none; background: white; width: 100%; padding: 0; }
+            .btn-container, .btn-download { display: none; }
+            h2 { color: black; border-bottom: 2px solid black; }
+            .info-row strong { color: black; }
+            .media-box { background: none; border: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>ملف البلاغ التفصيلي</h2>
+        
+        <div class="info-row"><strong>تصنيف الحالة:</strong> {{ report.report_type }}</div>
+        <div class="info-row"><strong>الاسم:</strong> {{ report.name }}</div>
+        <div class="info-row"><strong>المحافظة:</strong> {{ report.governorate }}</div>
+        <div class="info-row"><strong>العنوان:</strong> {{ report.address }}</div>
+        <div class="info-row"><strong>جهة القتال السابقة:</strong> {{ report.affiliation }}</div>
+        <div class="info-row"><strong>رابط الفيسبوك:</strong> <a href="{{ report.facebook }}" target="_blank" style="color: #60a5fa;">{{ report.facebook }}</a></div>
+        <div class="info-row"><strong>رقم الهاتف:</strong> {{ report.phone }}</div>
+
+        <!-- فحص جميع التسميات المحتملة للصورة في قاعدة البيانات -->
+        {% set img_path = report.media or report.image or report.location_image or report.photo %}
+        {% if img_path %}
+        <div class="media-box">
+            <strong>المرفق المرئي (صورة أو فيديو):</strong>
+            
+            {% if img_path.startswith('http') or img_path.startswith('data:image') %}
+                <!-- إذا كانت الصورة رابط خارجي أو Base64 -->
+                <img src="{{ img_path }}" alt="صورة البلاغ">
+            {% else %}
+                <!-- إذا كانت مخزنة كاسم ملف محلي أو مرفوعة -->
+                <img src="{{ url_for('static', filename='uploads/' + img_path) }}" alt="صورة البلاغ">
+            <% endif %>
+            
+            <br>
+            <a href="{{ img_path if img_path.startswith('http') else url_for('static', filename='uploads/' + img_path) }}" download class="btn btn-download" target="_blank">تحميل الملف المرفق للاب توب</a>
+        </div>
+        {% endif %}
+
+        <div class="btn-container">
+            <button onclick="window.print()" class="btn">طباعة التقرير كما هو</button>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-back">العودة للوحة التحكم</a>
+        </div>
+    </div>
+
+</body>
+</html>
