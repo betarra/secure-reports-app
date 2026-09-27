@@ -44,7 +44,6 @@
 
         {% set raw_media = report.media or report.image or report.location_image or report.photo or report.file or report.attachment %}
         
-        {# نتأكد أن الحقلي ليس مجرد صيغة تالفة قديمة مثل jpg أو jpg.1 #}
         {% if raw_media and raw_media|lower not in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'jpg.1', 'jpeg.1'] and raw_media|length > 4 %}
         <div class="media-box">
             <strong>الملف أو الصورة المرفقة:</strong><br>
