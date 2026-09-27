@@ -55,42 +55,6 @@ def index():
             'affiliation': affiliation,
             'facebook': facebook,
             'phone': phone,
-            'status': 'قيد المعالجة',
-            'timestamp': firestore.SERVER_TIMESTAMP
-        }
-        
-        if filename:
-            report_data['media'] = filename  # تخزين اسم الملف الصحيح في قاعدة البيانات
-            
-        db.collection('reports').add(report_data)
-        return redirect(url_for('index'))
-        
-    return render_template('report.html')
-
-# المسار الرئيسي (يعرض صفحة الإرسال report.html ويستقبل البيانات POST)
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    if request.method == 'POST':
-        report_type = request.form.get('report_type')
-        suspect_name = request.form.get('suspect_name')
-        governorate = request.form.get('governorate')
-        address = request.form.get('address')
-        affiliation = request.form.get('affiliation')
-        facebook = request.form.get('facebook')
-        phone = request.form.get('phone')
-        
-        # التقاط الملف أو الصورة المرفقة من الحقول الموجودة في report.html
-        media_file = request.files.get('media_file') or request.files.get('location_image') or request.files.get('media') or request.files.get('image')
-        filename = handle_file_upload(media_file)
-        
-        report_data = {
-            'report_type': report_type,
-            'name': suspect_name,
-            'governorate': governorate,
-            'address': address,
-            'affiliation': affiliation,
-            'facebook': facebook,
-            'phone': phone,
             'media': filename,       # <--- هذا هو السطر المهم الذي كان ناقصاً لتخزين اسم الملف
             'image': filename,       # <--- أضفناه كاحتياط لتتطابق مع أي قراءة قديمة في قالب العرض
             'status': 'قيد المعالجة',
