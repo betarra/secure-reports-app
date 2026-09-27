@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ملف البلاغ الكامل</title>
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='uploads/app_logo.jpg') }}">
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: Tahoma, sans-serif; padding: 30px; }
+        .card { max-width: 700px; background: #1e1e1e; border: 1px solid #333; padding: 30px; border-radius: 10px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h2 { color: #d97706; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .info-row { margin-bottom: 15px; font-size: 16px; }
+        .info-row strong { color: #60a5fa; display: inline-block; width: 150px; }
+        .media-box { margin-top: 20px; text-align: center; background: #252525; padding: 15px; border-radius: 8px; border: 1px solid #444; }
+        img, video { max-width: 100%; max-height: 350px; border-radius: 6px; border: 1px solid #444; margin-top: 10px; }
+        .btn-container { margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { padding: 10px 20px; background: #d97706; color: white; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-weight: bold; text-align: center; display: inline-block; }
+        .btn-back { background: #4b5563; }
+        .btn-download { background: #059669; }
+        .btn:hover { opacity: 0.9; }
+        
+        @media print {
+            body { background: white; color: black; }
+            .card { border: none; background: white; width: 100%; padding: 0; box-shadow: none; }
+            .btn-container, .btn-download { display: none; }
+            h2 { color: black; border-bottom: 2px solid black; }
+            .info-row strong { color: black; }
+            .media-box { background: none; border: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>تفاصيل البلاغ: {{ report.name }}</h2>
+        
+        <div class="info-row"><strong>نوع البلاغ:</strong> {{ report.report_type }}</div>
+        <div class="info-row"><strong>المحافظة:</strong> {{ report.governorate }}</div>
+        <div class="info-row"><strong>العنوان:</strong> {{ report.address }}</div>
+        <div class="info-row"><strong>الجهة / الصفة:</strong> {{ report.affiliation }}</div>
+        <div class="info-row"><strong>رابط الفيسبوك:</strong> <a href="{{ report.facebook }}" target="_blank" style="color: #60a5fa;">{{ report.facebook }}</a></div>
+        <div class="info-row"><strong>رقم الهاتف:</strong> {{ report.phone }}</div>
+        <div class="info-row"><strong>الحالة:</strong> {{ report.status or 'قيد المعالجة' }}</div>
+
+        <div class="media-box">
+            <strong>الملف أو الصورة المرفقة:</strong><br>
+            {% if report.clean_media %}
+                <img src="{{ report.clean_media }}" alt="صورة البلاغ" onerror="this.onerror=null; this.style.display='none';">
+                <br><br>
+                <a href="{{ report.clean_media }}" download="report_attachment.jpg" class="btn btn-download">تحميل الملف المرفق للاب توب</a>
+            {% else %}
+                <div style="padding: 15px; color: #9ca3af; font-size: 14px; margin-top: 10px;">
+                    ⚠️ هذا البلاغ لا يحتوي على ملف مرفق حقيقي أو تم تخزينه كنص فارغ.
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="btn-container">
+            <button onclick="window.print()" class="btn">طباعة التقرير كما هو</button>
+            <a href="{{ url_for('admin_panel') }}" class="btn btn-back">العودة لوحة التحكم</a>
+        </div>
+    </div>
+
+</body>
+</html>
