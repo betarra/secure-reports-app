@@ -26,13 +26,23 @@ def index():
 # استقبال البلاغ وتخزينه في سحابة Firebase الأبدية
 @app.route('/submit', methods=['POST'])
 def submit_report():
-    category = request.form.get('category')
-    content = request.form.get('content')
+    report_type = request.form.get('report_type')
+    suspect_name = request.form.get('suspect_name')
+    governorate = request.form.get('governorate')
+    address = request.form.get('address')
+    affiliation = request.form.get('affiliation')
+    facebook = request.form.get('facebook')
+    phone = request.form.get('phone')
     
     # حفظ البيانات في مجموعة 'reports' في قاعدة البيانات
     db.collection('reports').add({
-        'category': category,
-        'content': content,
+        'report_type': report_type,
+        'suspect_name': suspect_name,
+        'governorate': governorate,
+        'address': address,
+        'affiliation': affiliation,
+        'facebook': facebook,
+        'phone': phone,
         'timestamp': firestore.SERVER_TIMESTAMP
     })
     return redirect(url_for('index'))
