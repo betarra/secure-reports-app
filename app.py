@@ -6,7 +6,7 @@ from firebase_admin import credentials, firestore
 
 app = Flask(__name__)
 
-# طريقة آمنة للتعرف على المفتاح سواء محلياً أو على Render
+# تهيئة الاتصال بقاعدة بيانات Firebase (سواء محلياً أو عبر متغيرات البيئة على Render)
 if 'FIREBASE_KEY_JSON' in os.environ:
     key_dict = json.loads(os.environ['FIREBASE_KEY_JSON'])
     cred = credentials.Certificate(key_dict)
@@ -16,12 +16,35 @@ else:
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-# الصفحة الرئيسية (إرسال بلاغ)
-@app.route('/')
+# المسار الرئيسي (يعرض صفحة الإرسال report.html ويستقبل البيانات POST لتجنب خطأ 405)
+@app.route('/', methods=['GET', 'POST'])
 def index():
+    if request.method == 'POST':
+        report_type = request.form.get('report_type')
+        suspect_name = request.form.get('suspect_name')
+        governorate = request.form.get('governorate')
+        address = request.form.get('address')
+        affiliation = request.form.get('affiliation')
+        facebook = request.form.get('facebook')
+        phone = request.form.get('phone')
+        
+        # تخزين البلاغ في قاعدة البيانات مع مطابقة الحقول لتعمل مع لوحة التحكم
+        db.collection('reports').add({
+            'report_type': report_type,
+            'name': suspect_name,  # تتطابق تماماً مع {{ r.name }} في admin.html
+            'governorate': governorate,
+            'address': address,
+            'affiliation': affiliation,
+            'facebook': facebook,
+            'phone': phone,
+            'status': 'قيد المعالجة',  # الحالة الافتراضية للبلاغ الجديد
+            'timestamp': firestore.SERVER_TIMESTAMP
+        })
+        return redirect(url_for('index'))
+        
     return render_template('report.html')
 
-# استقبال البلاغ وتخزينه في سحابة Firebase مع ضبط الحقول لتتطابق مع الـ Admin
+# مسار إضافي احتياطي لاستقبال الـ submit إذا كان النموذج يوجه إليه
 @app.route('/submit', methods=['POST'])
 def submit_report():
     report_type = request.form.get('report_type')
@@ -34,18 +57,18 @@ def submit_report():
     
     db.collection('reports').add({
         'report_type': report_type,
-        'name': suspect_name,  # تم تعديلها لتتطابق مع {{ r.name }} في admin.html
+        'name': suspect_name,
         'governorate': governorate,
         'address': address,
         'affiliation': affiliation,
         'facebook': facebook,
         'phone': phone,
-        'status': 'قيد المعالجة',  # إضافة الحالة الافتراضية للبلاغ
+        'status': 'قيد المعالجة',
         'timestamp': firestore.SERVER_TIMESTAMP
     })
     return redirect(url_for('index'))
 
-# لوحة التحكم الخاصة بك (/admin) لجلب البلاغات من السحابة وعرضها
+# لوحة التحكم لجلب وعرض البلاغات
 @app.route('/admin')
 def admin_panel():
     try:
@@ -60,34 +83,31 @@ def admin_panel():
         
     return render_template('admin.html', reports=reports)
 
-# --- المسارات البرمجية الخاصة بأزرار لوحة التحكم (تمت إضافتها لتجنب الأخطاء) ---
-
-# 1. مسار تغيير حالة البلاغ إلى "تم التعامل"
+# مسار لتغيير حالة البلاغ إلى "تم التعامل"
 @app.route('/resolve/<report_id>')
 def resolve_report(report_id):
     db.collection('reports').document(report_id).update({'status': 'تم التعامل'})
     return redirect(url_for('admin_panel'))
 
-# 2. مسار حذف البلاغ
+# مسار لحذف البلاغ
 @app.route('/delete/<report_id>')
 def delete_report(report_id):
     db.collection('reports').document(report_id).delete()
     return redirect(url_for('admin_panel'))
 
-# 3. مسار عرض تفاصيل البلاغ الفردي
+# مسار لعرض تفاصيل بلاغ محدد
 @app.route('/report/<report_id>')
 def report_detail(report_id):
     doc = db.collection('reports').document(report_id).get()
     if doc.exists:
         r = doc.to_dict()
         r['id'] = doc.id
-        # يمكنك إنشاء صفحة عرض تفاصيل مخصصة أو استخدام قالب بسيط
         return f"""
         <html dir='rtl'><body style='background:#121212; color:#fff; font-family:Tahoma; padding:20px;'>
         <h2>تفاصيل البلاغ: {r.get('name')}</h2>
         <p><b>نوع البلاغ:</b> {r.get('report_type')}</p>
         <p><b>المحافظة:</b> {r.get('governorate')}</p>
-        <p><b>العنوان الدقيق:</b> {r.get('address')}</p>
+        <p><b>العنوان:</b> {r.get('address')}</p>
         <p><b>الجهة / الصفة:</b> {r.get('affiliation')}</p>
         <p><b>رابط الفيسبوك:</b> <a href='{r.get('facebook')}' target='_blank' style='color:#60a5fa;'>{r.get('facebook')}</a></p>
         <p><b>رقم الهاتف:</b> {r.get('phone')}</p>
@@ -97,7 +117,7 @@ def report_detail(report_id):
         """
     return "البلاغ غير موجود", 404
 
-# 4. مسار تصدير البلاغات
+# مسار التصدير
 @app.route('/export')
 def export_reports():
     return redirect(url_for('admin_panel'))
