@@ -1,148 +1,79 @@
-import os
-import json
-from flask import Flask, render_template, request, redirect, url_for
-from werkzeug.utils import secure_filename
+from flask import Flask, render_template, request, redirect, url_for, flash
 import firebase_admin
 from firebase_admin import credentials, firestore
+import os
+import json
 
 app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY', 'secure_admin_key_12345')
 
-# إعداد مجلد الرفع المحلي للصور والمرفقات
-UPLOAD_FOLDER = 'static/uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# تهيئة الاتصال بقاعدة بيانات Firebase (سواء محلياً أو عبر متغيرات البيئة على Render)
-if 'FIREBASE_KEY_JSON' in os.environ:
-    key_dict = json.loads(os.environ['FIREBASE_KEY_JSON'])
-    cred = credentials.Certificate(key_dict)
-else:
-    cred = credentials.Certificate("firebase_key.json")
-
-try:
-    firebase_admin.get_app()
-except ValueError:
+# إعداد اتصال Firebase (يدعم متغيرات البيئة على Render أو ملف محلي)
+if not firebase_admin._apps:
+    firebase_key_json = os.environ.get('FIREBASE_KEY_JSON')
+    if firebase_key_json:
+        cred_dict = json.loads(firebase_key_json)
+        cred = credentials.Certificate(cred_dict)
+    else:
+        cred = credentials.Certificate('firebase_key.json')
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
-# الدالة المساعدة لمعالجة حفظ الصور والمرفقات بشكل آمن
-def handle_file_upload(file_storage):
-    if file_storage and file_storage.filename != '':
-        filename = secure_filename(file_storage.filename)
-        # التأكد من أن اسم الملف ليس مجرد امتداد وهمي
-        if filename.lower() in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']:
-            return None
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file_storage.save(file_path)
-        return filename
-    return None
-
-import base64
+# المحافظات السورية لتعبئتها في القائمة المنسدلة
+SYRIAN_PROVINCES = [
+    "دمشق", "ريف دمشق", "حلب", "حمص", "حماة", "اللاذقية", 
+    "طرطوس", "إدلب", "دير الزور", "الرقة", "الحسكة", 
+    "درعا", "السويداء", "القنيطرة"
+]
 
 @app.route('/', methods=['GET', 'POST'])
-def index():
+def report():
     if request.method == 'POST':
-        report_type = request.form.get('report_type')
-        suspect_name = request.form.get('suspect_name')
-        governorate = request.form.get('governorate')
-        address = request.form.get('address')
-        affiliation = request.form.get('affiliation')
-        facebook = request.form.get('facebook')
-        phone = request.form.get('phone')
-        
-        # التقاط الملف المرفق بأي اسم محتمل
-        media_file = (
-            request.files.get('media_file') or 
-            request.files.get('location_image') or 
-            request.files.get('media') or 
-            request.files.get('image') or
-            request.files.get('file') or
-            request.files.get('attachment')
-        )
-        
-        image_data = ""
-        if media_file and media_file.filename != '':
-            # قراءة الملف وتحويله لـ Base64 لضمان عدم ضياعه على السيرفر السحابي
-            file_bytes = media_file.read()
-            if file_bytes:
-                encoded_string = base64.b64encode(file_bytes).decode('utf-8')
-                image_data = f"data:image/jpeg;base64,{encoded_string}"
-        
-        report_data = {
-            'report_type': report_type,
-            'name': suspect_name,
-            'governorate': governorate,
-            'address': address,
-            'affiliation': affiliation,
-            'facebook': facebook,
-            'phone': phone,
-            'media': image_data,      
-            'image': image_data,      
-            'status': 'قيد المعالجة',
-            'timestamp': firestore.SERVER_TIMESTAMP
-        }
-        
-        # حفظ البيانات في فايربيس
-        db.collection('reports').add(report_data)
-        return redirect(url_for('index'))
-        
-    return render_template('report.html')
+        try:
+            report_data = {
+                'report_type': request.form.get('report_type'),
+                'suspect_name': request.form.get('suspect_name'),
+                'province': request.form.get('province'),
+                'nationality': request.form.get('nationality', 'سوري'),
+                'current_address': request.form.get('current_address'),
+                'combat_history': request.form.get('combat_history'),
+                'social_link': request.form.get('social_link'),
+                'phone': request.form.get('phone'),
+                'media_url': request.form.get('media_url', ''),
+                'created_at': firestore.SERVER_TIMESTAMP
+            }
+            # حفظ البيانات في قاعدة بيانات فايربيس السحابية
+            db.collection('reports').add(report_data)
+            flash('تم إرسال بلاغك بنجاح وبسرية تامة.', 'success')
+            return redirect(url_for('report'))
+        except Exception as e:
+            flash(f'حدث خطأ أثناء الإرسال: {str(e)}', 'error')
+            
+    return render_template('report.html', provinces=SYRIAN_PROVINCES)
 
-# لوحة التحكم لجلب وعرض البلاغات
 @app.route('/admin')
-def admin_panel():
+def admin_dashboard():
     try:
-        reports_ref = db.collection('reports').order_by('timestamp', direction=firestore.Query.DESCENDING).stream()
+        # جلب البلاغات مرتبة حسب الأحدث
+        docs = db.collection('reports').order_by('created_at', direction=firestore.Query.DESCENDING).stream()
         reports = []
-        for doc in reports_ref:
+        for doc in docs:
             r = doc.to_dict()
             r['id'] = doc.id
             reports.append(r)
     except Exception as e:
-        reports = [] 
-        
+        reports = []
+
     return render_template('admin.html', reports=reports)
 
-# مسار لتغيير حالة البلاغ إلى "تم التعامل"
-@app.route('/resolve/<report_id>')
-def resolve_report(report_id):
-    db.collection('reports').document(report_id).update({'status': 'تم التعامل'})
-    return redirect(url_for('admin_panel'))
-
-# مسار لحذف البلاغ
-@app.route('/delete/<report_id>')
+@app.route('/admin/delete/<report_id>', methods=['POST'])
 def delete_report(report_id):
-    db.collection('reports').document(report_id).delete()
-    return redirect(url_for('admin_panel'))
-
-# مسار لعرض تفاصيل بلاغ محدد
-@app.route('/report/<report_id>')
-def report_detail(report_id):
     try:
-        doc = db.collection('reports').document(report_id).get()
-        if doc.exists:
-            report = doc.to_dict()
-            report['id'] = doc.id
-            
-            # معالجة آمنة لاسم الملف لضمان قراءته بشكل صحيح في قالب العرض
-            raw_media = report.get('media') or report.get('image') or report.get('location_image') or report.get('photo') or report.get('file') or report.get('attachment')
-            
-            if raw_media and str(raw_media).strip().lower() not in ['none', '', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'jpg.1', 'jpeg.1']:
-                report['clean_media'] = str(raw_media).strip()
-            else:
-                report['clean_media'] = None
-                
-            return render_template('report_detail.html', report=report)
-        return "البلاغ غير موجود في قاعدة البيانات", 404
+        db.collection('reports').document(report_id).delete()
+        flash('تم حذف البلاغ بنجاح', 'success')
     except Exception as e:
-        import traceback
-        return f"<pre style='color: red; direction: ltr; padding: 20px;'>{traceback.format_exc()}</pre>", 500
-
-# مسار التصدير
-@app.route('/export')
-def export_reports():
-    return redirect(url_for('admin_panel'))
+        flash('حدث خطأ أثناء الحذف', 'error')
+    return redirect(url_for('admin_dashboard'))
 
 if __name__ == '__main__':
     app.run(debug=True)
