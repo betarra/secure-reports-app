@@ -129,13 +129,17 @@ def delete_report(report_id):
 # مسار لعرض تفاصيل بلاغ محدد (تم تصحيحه ليعرض ملف الـ HTML الخاص بالتفاصيل بداخل العرض)
 @app.route('/report/<report_id>')
 def report_detail(report_id):
-    doc = db.collection('reports').document(report_id).get()
-    if doc.exists:
-        report = doc.to_dict()
-        report['id'] = doc.id
-        return render_template('report_detail.html', report=report)
-    return "البلاغ غير موجود", 404
-
+    try:
+        doc = db.collection('reports').document(report_id).get()
+        if doc.exists:
+            report = doc.to_dict()
+            report['id'] = doc.id
+            return render_template('report_detail.html', report=report)
+        return "البلاغ غير موجود في قاعدة البيانات", 404
+    except Exception as e:
+        # هذه الخطوة ستطبع الخطأ الحقيقي مباشرة على الشاشة لعرف سببه بدقة
+        import traceback
+        return f"<pre style='color: red; direction: ltr; padding: 20px;'>{traceback.format_exc()}</pre>", 500
 # مسار التصدير
 @app.route('/export')
 def export_reports():
