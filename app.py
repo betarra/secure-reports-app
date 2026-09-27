@@ -19,13 +19,20 @@ if 'FIREBASE_KEY_JSON' in os.environ:
 else:
     cred = credentials.Certificate("firebase_key.json")
 
-firebase_admin.initialize_app(cred)
+try:
+    firebase_admin.get_app()
+except ValueError:
+    firebase_admin.initialize_app(cred)
+
 db = firestore.client()
 
-# الدالة المساعدة لمعالجة حفظ الصور والمرفقات
+# الدالة المساعدة لمعالجة حفظ الصور والمرفقات بشكل آمن
 def handle_file_upload(file_storage):
     if file_storage and file_storage.filename != '':
         filename = secure_filename(file_storage.filename)
+        # التأكد من أن اسم الملف ليس مجرد امتداد وهمي
+        if filename.lower() in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']:
+            return None
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file_storage.save(file_path)
         return filename
@@ -43,8 +50,16 @@ def index():
         facebook = request.form.get('facebook')
         phone = request.form.get('phone')
         
-        # التقاط الملف أو الصورة المرفقة من الحقول الموجودة في report.html
-        media_file = request.files.get('media_file') or request.files.get('location_image') or request.files.get('media') or request.files.get('image')
+        # التقاط الملف أو الصورة المرفقة من مختلف الأسماء المحتملة في النموذج
+        media_file = (
+            request.files.get('media_file') or 
+            request.files.get('location_image') or 
+            request.files.get('media') or 
+            request.files.get('image') or
+            request.files.get('file') or
+            request.files.get('attachment')
+        )
+        
         filename = handle_file_upload(media_file)
         
         report_data = {
@@ -105,8 +120,9 @@ def report_detail(report_id):
             
             # معالجة آمنة لاسم الملف لضمان قراءته بشكل صحيح في قالب العرض
             raw_media = report.get('media') or report.get('image') or report.get('location_image') or report.get('photo') or report.get('file') or report.get('attachment')
-            if raw_media and str(raw_media).lower() not in ['none', '', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'jpg.1', 'jpeg.1']:
-                report['clean_media'] = str(raw_media)
+            
+            if raw_media and str(raw_media).strip().lower() not in ['none', '', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'jpg.1', 'jpeg.1']:
+                report['clean_media'] = str(raw_media).strip()
             else:
                 report['clean_media'] = None
                 
