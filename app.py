@@ -1,5 +1,6 @@
 import os
 import json
+import base64
 from flask import Flask, render_template, request, redirect, url_for
 from werkzeug.utils import secure_filename
 import firebase_admin
@@ -7,7 +8,7 @@ from firebase_admin import credentials, firestore
 
 app = Flask(__name__)
 
-# إعداد مجلد الرفع المحلي للصور والمرفقات
+# إعداد مجلد الرفع المحلي (احتياطي)
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -26,16 +27,23 @@ except ValueError:
 
 db = firestore.client()
 
-# الدالة المساعدة لمعالجة حفظ الصور والمرفقات بشكل آمن
+# الدالة المساعدة لتحويل الصورة إلى Base64 لتخزينها مباشرة في Firebase وضمان عدم ضياعها على Render
 def handle_file_upload(file_storage):
     if file_storage and file_storage.filename != '':
         filename = secure_filename(file_storage.filename)
         # التأكد من أن اسم الملف ليس مجرد امتداد وهمي
         if filename.lower() in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']:
             return None
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file_storage.save(file_path)
-        return filename
+        try:
+            file_bytes = file_storage.read()
+            if len(file_bytes) > 0:
+                encoded_string = base64.b64encode(file_bytes).decode('utf-8')
+                ext = filename.split('.')[-1].lower()
+                if ext == 'jpg':
+                    ext = 'jpeg'
+                return f"data:image/{ext};base64,{encoded_string}"
+        except Exception:
+            pass
     return None
 
 # المسار الرئيسي (يعرض صفحة الإرسال report.html ويستقبل البيانات POST)
@@ -60,7 +68,7 @@ def index():
             request.files.get('attachment')
         )
         
-        filename = handle_file_upload(media_file)
+        media_data = handle_file_upload(media_file)
         
         report_data = {
             'report_type': report_type,
@@ -70,8 +78,8 @@ def index():
             'affiliation': affiliation,
             'facebook': facebook,
             'phone': phone,
-            'media': filename,       
-            'image': filename,       
+            'media': media_data,       
+            'image': media_data,       
             'status': 'قيد المعالجة',
             'timestamp': firestore.SERVER_TIMESTAMP
         }
@@ -118,10 +126,10 @@ def report_detail(report_id):
             report = doc.to_dict()
             report['id'] = doc.id
             
-            # معالجة آمنة لاسم الملف لضمان قراءته بشكل صحيح في قالب العرض
+            # جلب البيانات المعالجة للصورة
             raw_media = report.get('media') or report.get('image') or report.get('location_image') or report.get('photo') or report.get('file') or report.get('attachment')
             
-            if raw_media and str(raw_media).strip().lower() not in ['none', '', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'jpg.1', 'jpeg.1']:
+            if raw_media and str(raw_media).strip().lower() not in ['none', '', 'jpg', 'jpeg', 'png', 'gif', 'webp']:
                 report['clean_media'] = str(raw_media).strip()
             else:
                 report['clean_media'] = None
