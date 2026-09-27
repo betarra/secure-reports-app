@@ -42,7 +42,7 @@
         <div class="info-row"><strong>رقم الهاتف:</strong> {{ report.phone }}</div>
         <div class="info-row"><strong>الحالة:</strong> {{ report.status or 'قيد المعالجة' }}</div>
 
-        <!-- فحص شامل لجميع الاحتمالات الممكنة لاسم حقل الصورة أو الملف في قاعدة البيانات -->
+        <!-- فحص شامل لاحتمالات حقل الصورة أو الملف في قاعدة البيانات -->
         {% set media_file = report.media or report.image or report.location_image or report.photo or report.file or report.attachment %}
         
         {% if media_file %}
@@ -57,17 +57,12 @@
             <!-- زر التحميل المخصص للاب توب -->
             <a href="{{ media_file if media_file.startswith('http') else url_for('static', filename='uploads/' + media_file) }}" download class="btn btn-download" target="_blank">تحميل الملف المرفق للاب توب</a>
         </div>
-        {% else %}
-        <!-- تنبيه توضيحي يظهر فقط إن لم يجد الكود أي حقل صورة في قاعدة البيانات لهذا البلاغ بالذات -->
-        <div style="margin-top: 15px; padding: 12px; background: #2a1212; border: 1px solid #ef4444; border-radius: 5px; font-size: 13px; color: #f87171;">
-            <strong>تنبيه فني:</strong> لا يوجد حقل مخصص للصورة أو الملف في هذا المستند بـ Firestore. المفاتيح المخزنة حالياً في قاعدة البيانات لهذا البلاغ هي: 
-            <br><code>{{ report.keys() | list }}</code>
-        </div>
         {% endif %}
 
         <div class="btn-container">
             <button onclick="window.print()" class="btn">طباعة التقرير كما هو</button>
-            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-back">العودة لوحة التحكم</a>
+            <!-- مسار العودة الصحيح المطابق لملف app.py -->
+            <a href="{{ url_for('admin_panel') }}" class="btn btn-back">العودة لوحة التحكم</a>
         </div>
     </div>
 
