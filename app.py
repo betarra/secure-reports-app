@@ -24,6 +24,7 @@ def index():
     return render_template('report.html')
 
 # استقبال البلاغ وتخزينه في سحابة Firebase الأبدية
+# مسار استقبال البلاغ وتخزينه في سحابة Firebase
 @app.route('/submit', methods=['POST'])
 def submit_report():
     report_type = request.form.get('report_type')
@@ -34,7 +35,6 @@ def submit_report():
     facebook = request.form.get('facebook')
     phone = request.form.get('phone')
     
-    # حفظ البيانات في مجموعة 'reports' في قاعدة البيانات
     db.collection('reports').add({
         'report_type': report_type,
         'suspect_name': suspect_name,
