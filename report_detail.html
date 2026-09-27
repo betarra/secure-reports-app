@@ -12,7 +12,7 @@
         .info-row { margin-bottom: 15px; font-size: 16px; }
         .info-row strong { color: #9ca3af; display: inline-block; width: 150px; }
         .media-box { margin-top: 20px; text-align: center; background: #252525; padding: 15px; border-radius: 6px; }
-        img, video { max-width: 100%; max-height: 300px; border-radius: 6px; border: 1px solid #444; margin-top: 10px; display: block; margin-left: auto; margin-right: auto; }
+        img, video { max-width: 100%; max-height: 350px; border-radius: 6px; border: 1px solid #444; margin-top: 10px; display: block; margin-left: auto; margin-right: auto; }
         .btn-container { margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap; }
         .btn { padding: 10px 20px; background: #d97706; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 15px; text-decoration: none; text-align: center; display: inline-block; }
         .btn-back { background: #4b5563; }
@@ -32,38 +32,42 @@
 <body>
 
     <div class="card">
-        <h2>ملف البلاغ التفصيلي</h2>
+        <h2>تفاصيل البلاغ: {{ report.name }}</h2>
         
-        <div class="info-row"><strong>تصنيف الحالة:</strong> {{ report.report_type }}</div>
-        <div class="info-row"><strong>الاسم:</strong> {{ report.name }}</div>
+        <div class="info-row"><strong>نوع البلاغ:</strong> {{ report.report_type }}</div>
         <div class="info-row"><strong>المحافظة:</strong> {{ report.governorate }}</div>
         <div class="info-row"><strong>العنوان:</strong> {{ report.address }}</div>
-        <div class="info-row"><strong>جهة القتال السابقة:</strong> {{ report.affiliation }}</div>
+        <div class="info-row"><strong>الجهة / الصفة:</strong> {{ report.affiliation }}</div>
         <div class="info-row"><strong>رابط الفيسبوك:</strong> <a href="{{ report.facebook }}" target="_blank" style="color: #60a5fa;">{{ report.facebook }}</a></div>
         <div class="info-row"><strong>رقم الهاتف:</strong> {{ report.phone }}</div>
+        <div class="info-row"><strong>الحالة:</strong> {{ report.status or 'قيد المعالجة' }}</div>
 
-        <!-- فحص جميع التسميات المحتملة للصورة في قاعدة البيانات -->
-        {% set img_path = report.media or report.image or report.location_image or report.photo %}
-        {% if img_path %}
+        <!-- فحص شامل لجميع الاحتمالات الممكنة لاسم حقل الصورة أو الملف في قاعدة البيانات -->
+        {% set media_file = report.media or report.image or report.location_image or report.photo or report.file or report.attachment %}
+        
+        {% if media_file %}
         <div class="media-box">
-            <strong>المرفق المرئي (صورة أو فيديو):</strong>
-            
-            {% if img_path.startswith('http') or img_path.startswith('data:image') %}
-                <!-- إذا كانت الصورة رابط خارجي أو Base64 -->
-                <img src="{{ img_path }}" alt="صورة البلاغ">
+            <strong>الملف أو الصورة المرفقة:</strong>
+            {% if media_file.lower().endswith(('mp4', 'mov', 'avi', 'mkv')) %}
+                <video controls src="{{ media_file if media_file.startswith('http') else url_for('static', filename='uploads/' + media_file) }}"></video>
             {% else %}
-                <!-- إذا كانت مخزنة كاسم ملف محلي أو مرفوعة -->
-                <img src="{{ url_for('static', filename='uploads/' + img_path) }}" alt="صورة البلاغ">
-            <% endif %>
-            
-            <br>
-            <a href="{{ img_path if img_path.startswith('http') else url_for('static', filename='uploads/' + img_path) }}" download class="btn btn-download" target="_blank">تحميل الملف المرفق للاب توب</a>
+                <img src="{{ media_file if media_file.startswith('http') else url_for('static', filename='uploads/' + media_file) }}" alt="صورة البلاغ">
+            {% endif %}
+            <br><br>
+            <!-- زر التحميل المخصص للاب توب -->
+            <a href="{{ media_file if media_file.startswith('http') else url_for('static', filename='uploads/' + media_file) }}" download class="btn btn-download" target="_blank">تحميل الملف المرفق للاب توب</a>
+        </div>
+        {% else %}
+        <!-- تنبيه توضيحي يظهر فقط إن لم يجد الكود أي حقل صورة في قاعدة البيانات لهذا البلاغ بالذات -->
+        <div style="margin-top: 15px; padding: 12px; background: #2a1212; border: 1px solid #ef4444; border-radius: 5px; font-size: 13px; color: #f87171;">
+            <strong>تنبيه فني:</strong> لا يوجد حقل مخصص للصورة أو الملف في هذا المستند بـ Firestore. المفاتيح المخزنة حالياً في قاعدة البيانات لهذا البلاغ هي: 
+            <br><code>{{ report.keys() | list }}</code>
         </div>
         {% endif %}
 
         <div class="btn-container">
             <button onclick="window.print()" class="btn">طباعة التقرير كما هو</button>
-            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-back">العودة للوحة التحكم</a>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-back">العودة لوحة التحكم</a>
         </div>
     </div>
 

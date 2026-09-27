@@ -1,10 +1,16 @@
 import os
 import json
 from flask import Flask, render_template, request, redirect, url_for
+from werkzeug.utils import secure_filename
 import firebase_admin
 from firebase_admin import credentials, firestore
 
 app = Flask(__name__)
+
+# إعداد مجلد الرفع المحلي للصور (إن لزم)
+UPLOAD_FOLDER = 'static/uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # تهيئة الاتصال بقاعدة بيانات Firebase (سواء محلياً أو عبر متغيرات البيئة على Render)
 if 'FIREBASE_KEY_JSON' in os.environ:
@@ -16,7 +22,16 @@ else:
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-# المسار الرئيسي (يعرض صفحة الإرسال report.html ويستقبل البيانات POST لتجنب خطأ 405)
+# الدالة المساعدة لمعالجة حفظ الصور والمرفقات
+def handle_file_upload(file_storage):
+    if file_storage and file_storage.filename != '':
+        filename = secure_filename(file_storage.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file_storage.save(file_path)
+        return filename
+    return None
+
+# المسار الرئيسي (يعرض صفحة الإرسال report.html ويستقبل البيانات POST)
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -28,23 +43,31 @@ def index():
         facebook = request.form.get('facebook')
         phone = request.form.get('phone')
         
-        # تخزين البلاغ في قاعدة البيانات مع مطابقة الحقول لتعمل مع لوحة التحكم
-        db.collection('reports').add({
+        # التقاط الملف أو الصورة المرفقة إن وجدت
+        media_file = request.files.get('media') or request.files.get('image') or request.files.get('location_image')
+        filename = handle_file_upload(media_file)
+        
+        report_data = {
             'report_type': report_type,
-            'name': suspect_name,  # تتطابق تماماً مع {{ r.name }} في admin.html
+            'name': suspect_name,
             'governorate': governorate,
             'address': address,
             'affiliation': affiliation,
             'facebook': facebook,
             'phone': phone,
-            'status': 'قيد المعالجة',  # الحالة الافتراضية للبلاغ الجديد
+            'status': 'قيد المعالجة',
             'timestamp': firestore.SERVER_TIMESTAMP
-        })
+        }
+        
+        if filename:
+            report_data['media'] = filename  # تخزين اسم الملف في قاعدة البيانات
+            
+        db.collection('reports').add(report_data)
         return redirect(url_for('index'))
         
     return render_template('report.html')
 
-# مسار إضافي احتياطي لاستقبال الـ submit إذا كان النموذج يوجه إليه
+# مسار إضافي لاستقبال الـ submit
 @app.route('/submit', methods=['POST'])
 def submit_report():
     report_type = request.form.get('report_type')
@@ -55,7 +78,10 @@ def submit_report():
     facebook = request.form.get('facebook')
     phone = request.form.get('phone')
     
-    db.collection('reports').add({
+    media_file = request.files.get('media') or request.files.get('image') or request.files.get('location_image')
+    filename = handle_file_upload(media_file)
+    
+    report_data = {
         'report_type': report_type,
         'name': suspect_name,
         'governorate': governorate,
@@ -65,7 +91,12 @@ def submit_report():
         'phone': phone,
         'status': 'قيد المعالجة',
         'timestamp': firestore.SERVER_TIMESTAMP
-    })
+    }
+    
+    if filename:
+        report_data['media'] = filename
+        
+    db.collection('reports').add(report_data)
     return redirect(url_for('index'))
 
 # لوحة التحكم لجلب وعرض البلاغات
@@ -95,26 +126,14 @@ def delete_report(report_id):
     db.collection('reports').document(report_id).delete()
     return redirect(url_for('admin_panel'))
 
-# مسار لعرض تفاصيل بلاغ محدد
+# مسار لعرض تفاصيل بلاغ محدد (تم تصحيحه ليعرض ملف الـ HTML الخاص بالتفاصيل بداخل العرض)
 @app.route('/report/<report_id>')
 def report_detail(report_id):
     doc = db.collection('reports').document(report_id).get()
     if doc.exists:
-        r = doc.to_dict()
-        r['id'] = doc.id
-        return f"""
-        <html dir='rtl'><body style='background:#121212; color:#fff; font-family:Tahoma; padding:20px;'>
-        <h2>تفاصيل البلاغ: {r.get('name')}</h2>
-        <p><b>نوع البلاغ:</b> {r.get('report_type')}</p>
-        <p><b>المحافظة:</b> {r.get('governorate')}</p>
-        <p><b>العنوان:</b> {r.get('address')}</p>
-        <p><b>الجهة / الصفة:</b> {r.get('affiliation')}</p>
-        <p><b>رابط الفيسبوك:</b> <a href='{r.get('facebook')}' target='_blank' style='color:#60a5fa;'>{r.get('facebook')}</a></p>
-        <p><b>رقم الهاتف:</b> {r.get('phone')}</p>
-        <p><b>الحالة:</b> {r.get('status')}</p>
-        <br><a href='{url_for('admin_panel')}' style='background:#059669; color:white; padding:10px 15px; text-decoration:none; border-radius:5px;'>العودة لوحة التحكم</a>
-        </body></html>
-        """
+        report = doc.to_dict()
+        report['id'] = doc.id
+        return render_template('report_detail.html', report=report)
     return "البلاغ غير موجود", 404
 
 # مسار التصدير
