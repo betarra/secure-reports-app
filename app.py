@@ -38,7 +38,8 @@ def handle_file_upload(file_storage):
         return filename
     return None
 
-# المسار الرئيسي (يعرض صفحة الإرسال report.html ويستقبل البيانات POST)
+import base64
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -50,7 +51,7 @@ def index():
         facebook = request.form.get('facebook')
         phone = request.form.get('phone')
         
-        # التقاط الملف أو الصورة المرفقة من مختلف الأسماء المحتملة في النموذج
+        # التقاط الملف المرفق بأي اسم محتمل
         media_file = (
             request.files.get('media_file') or 
             request.files.get('location_image') or 
@@ -60,7 +61,13 @@ def index():
             request.files.get('attachment')
         )
         
-        filename = handle_file_upload(media_file)
+        image_data = ""
+        if media_file and media_file.filename != '':
+            # قراءة الملف وتحويله لـ Base64 لضمان عدم ضياعه على السيرفر السحابي
+            file_bytes = media_file.read()
+            if file_bytes:
+                encoded_string = base64.b64encode(file_bytes).decode('utf-8')
+                image_data = f"data:image/jpeg;base64,{encoded_string}"
         
         report_data = {
             'report_type': report_type,
@@ -70,8 +77,8 @@ def index():
             'affiliation': affiliation,
             'facebook': facebook,
             'phone': phone,
-            'media': filename,       
-            'image': filename,       
+            'media': image_data,      
+            'image': image_data,      
             'status': 'قيد المعالجة',
             'timestamp': firestore.SERVER_TIMESTAMP
         }
