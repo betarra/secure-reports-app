@@ -42,10 +42,9 @@
         <div class="info-row"><strong>رقم الهاتف:</strong> {{ report.phone }}</div>
         <div class="info-row"><strong>الحالة:</strong> {{ report.status or 'قيد المعالجة' }}</div>
 
-        <!-- فحص شامل لاحتمالات حقل الصورة أو الملف في قاعدة البيانات -->
         {% set media_file = report.media or report.image or report.location_image or report.photo or report.file or report.attachment %}
         
-        {% if media_file %}
+        {% if media_file and media_file|length > 5 and not media_file in ['jpeg', 'png', 'jpg'] %}
         <div class="media-box">
             <strong>الملف أو الصورة المرفقة:</strong>
             {% if media_file.lower().endswith(('mp4', 'mov', 'avi', 'mkv')) %}
@@ -54,14 +53,16 @@
                 <img src="{{ media_file if media_file.startswith('http') else url_for('static', filename='uploads/' + media_file) }}" alt="صورة البلاغ">
             {% endif %}
             <br><br>
-            <!-- زر التحميل المخصص للاب توب -->
             <a href="{{ media_file if media_file.startswith('http') else url_for('static', filename='uploads/' + media_file) }}" download class="btn btn-download" target="_blank">تحميل الملف المرفق للاب توب</a>
         </div>
+        {% else %}
+        <div class="info-box" style="margin-top: 15px; color: #9ca3af; font-size: 14px; background: #252525; padding: 10px; border-radius: 5px;">
+            ملاحظة: هذا البلاغ لا يحتوي على ملف مرفق حقيقي (حقل الوسائط مسجل كـ: {{ media_file or 'فارغ' }})
+        </div>
         {% endif %}
-<div class="info-row" style="color: yellow; font-size: 14px;"><strong>محتويات قاعدة البيانات كاملة:</strong> {{ report }}</div>
+
         <div class="btn-container">
             <button onclick="window.print()" class="btn">طباعة التقرير كما هو</button>
-            <!-- مسار العودة الصحيح المطابق لملف app.py -->
             <a href="{{ url_for('admin_panel') }}" class="btn btn-back">العودة لوحة التحكم</a>
         </div>
     </div>
