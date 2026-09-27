@@ -32,19 +32,19 @@
     <h1>لوحة تحكم البلاغات السرية</h1>
     
     <div style="text-align: center; margin: 20px 0;">
-        <a href="{{ url_for('export_reports') }}" class="btn" style="background-color: #059669; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+        <a href="{{ url_for('export_reports') }}" style="background-color: #059669; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
             📥 تصدير جميع البلاغات
         </a>
     </div>
 
     <div class="grid-container">
-        <!-- خانة الشبيحة -->
         <div class="category-box">
             <h3>شبيح / عنصر سابق</h3>
             <ul>
                 {% set found = false %}
                 {% for r in reports %}
-                    {% if r.report_type == 'شبيح / عنصر سابق' %}
+                    {% set rtype = r.report_type | string | trim %}
+                    {% if 'شبيح' in rtype or 'عنصر' in rtype %}
                         {% set found = true %}
                         <li>
                             <div class="report-info">
@@ -55,10 +55,11 @@
                                     <span class="status-pending">● قيد المعالجة</span>
                                 {% endif %}
                             </div>
+                            <div style="font-size: 10px; color: #888;">النوع المسجل: {{ r.report_type }}</div>
                             <div class="action-btns">
                                 <div>
                                     {% set raw_media = r.media or r.image or r.location_image or r.photo or r.file or r.attachment %}
-                                    {% if raw_media and raw_media|lower not in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'jpg.1', 'jpeg.1'] and raw_media|length > 4 %}
+                                    {% if raw_media and raw_media|length > 10 and not raw_media.endswith('.jpg') %}
                                         <span class="has-attachment">📎 مرفق ملف/صورة</span>
                                     {% endif %}
                                 </div>
@@ -76,13 +77,13 @@
             </ul>
         </div>
 
-        <!-- خانة تجار المخدرات -->
         <div class="category-box">
             <h3>تجار المخدرات</h3>
             <ul>
                 {% set found = false %}
                 {% for r in reports %}
-                    {% if r.report_type == 'تاجر مخدرات' %}
+                    {% set rtype = r.report_type | string | trim %}
+                    {% if 'مخدرات' in rtype or 'تاجر' in rtype %}
                         {% set found = true %}
                         <li>
                             <div class="report-info">
@@ -93,10 +94,11 @@
                                     <span class="status-pending">● قيد المعالجة</span>
                                 {% endif %}
                             </div>
+                            <div style="font-size: 10px; color: #888;">النوع المسجل: {{ r.report_type }}</div>
                             <div class="action-btns">
                                 <div>
                                     {% set raw_media = r.media or r.image or r.location_image or r.photo or r.file or r.attachment %}
-                                    {% if raw_media and raw_media|lower not in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'jpg.1', 'jpeg.1'] and raw_media|length > 4 %}
+                                    {% if raw_media and raw_media|length > 10 and not raw_media.endswith('.jpg') %}
                                         <span class="has-attachment">📎 مرفق ملف/صورة</span>
                                     {% endif %}
                                 </div>
@@ -114,13 +116,13 @@
             </ul>
         </div>
 
-        <!-- خانة الصفات الأخرى -->
         <div class="category-box">
             <h3>متعاون / أمني</h3>
             <ul>
                 {% set found = false %}
                 {% for r in reports %}
-                    {% if r.report_type == 'متعاون / أمني' %}
+                    {% set rtype = r.report_type | string | trim %}
+                    {% if 'متعاون' in rtype or 'أمني' in rtype %}
                         {% set found = true %}
                         <li>
                             <div class="report-info">
@@ -131,10 +133,11 @@
                                     <span class="status-pending">● قيد المعالجة</span>
                                 {% endif %}
                             </div>
+                            <div style="font-size: 10px; color: #888;">النوع المسجل: {{ r.report_type }}</div>
                             <div class="action-btns">
                                 <div>
                                     {% set raw_media = r.media or r.image or r.location_image or r.photo or r.file or r.attachment %}
-                                    {% if raw_media and raw_media|lower not in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'jpg.1', 'jpeg.1'] and raw_media|length > 4 %}
+                                    {% if raw_media and raw_media|length > 10 and not raw_media.endswith('.jpg') %}
                                         <span class="has-attachment">📎 مرفق ملف/صورة</span>
                                     {% endif %}
                                 </div>
@@ -152,13 +155,13 @@
             </ul>
         </div>
 
-        <!-- خانة أخرى -->
         <div class="category-box">
             <h3>أخرى / بلاغات عامة</h3>
             <ul>
                 {% set found = false %}
                 {% for r in reports %}
-                    {% if r.report_type == 'أخرى' %}
+                    {% set rtype = r.report_type | string | trim %}
+                    {% if not ('شبيح' in rtype or 'عنصر' in rtype or 'مخدرات' in rtype or 'تاجر' in rtype or 'متعاون' in rtype or 'أمني' in rtype) %}
                         {% set found = true %}
                         <li>
                             <div class="report-info">
@@ -169,10 +172,11 @@
                                     <span class="status-pending">● قيد المعالجة</span>
                                 {% endif %}
                             </div>
+                            <div style="font-size: 10px; color: #888;">النوع المسجل: {{ r.report_type }}</div>
                             <div class="action-btns">
                                 <div>
                                     {% set raw_media = r.media or r.image or r.location_image or r.photo or r.file or r.attachment %}
-                                    {% if raw_media and raw_media|lower not in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'jpg.1', 'jpeg.1'] and raw_media|length > 4 %}
+                                    {% if raw_media and raw_media|length > 10 and not raw_media.endswith('.jpg') %}
                                         <span class="has-attachment">📎 مرفق ملف/صورة</span>
                                     {% endif %}
                                 </div>
