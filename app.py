@@ -3,11 +3,17 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import os
 import json
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'secure_admin_key_12345')
 
-# إعداد اتصال Firebase (يدعم متغيرات البيئة على Render أو ملف محلي)
+# إعداد مجلد حفظ الملفات المرفوعة
+UPLOAD_FOLDER = 'static/uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# إعداد اتصال Firebase
 if not firebase_admin._apps:
     firebase_key_json = os.environ.get('FIREBASE_KEY_JSON')
     if firebase_key_json:
@@ -19,7 +25,6 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
-# المحافظات السورية لتعبئتها في القائمة المنسدلة
 SYRIAN_PROVINCES = [
     "دمشق", "ريف دمشق", "حلب", "حمص", "حماة", "اللاذقية", 
     "طرطوس", "إدلب", "دير الزور", "الرقة", "الحسكة", 
@@ -30,6 +35,13 @@ SYRIAN_PROVINCES = [
 def report():
     if request.method == 'POST':
         try:
+            # التعامل مع رفع الملف (صورة أو فيديو)
+            file = request.files.get('media_file')
+            filename = ''
+            if file and file.filename != '':
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
             report_data = {
                 'report_type': request.form.get('report_type'),
                 'suspect_name': request.form.get('suspect_name'),
@@ -39,10 +51,9 @@ def report():
                 'combat_history': request.form.get('combat_history'),
                 'social_link': request.form.get('social_link'),
                 'phone': request.form.get('phone'),
-                'media_url': request.form.get('media_url', ''),
+                'media_filename': filename, # تخزين اسم الملف المرفوع
                 'created_at': firestore.SERVER_TIMESTAMP
             }
-            # حفظ البيانات في قاعدة بيانات فايربيس السحابية
             db.collection('reports').add(report_data)
             flash('تم إرسال بلاغك بنجاح وبسرية تامة.', 'success')
             return redirect(url_for('report'))
@@ -54,7 +65,6 @@ def report():
 @app.route('/admin')
 def admin_dashboard():
     try:
-        # جلب البلاغات مرتبة حسب الأحدث
         docs = db.collection('reports').order_by('created_at', direction=firestore.Query.DESCENDING).stream()
         reports = []
         for doc in docs:
