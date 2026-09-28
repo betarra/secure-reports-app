@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة البلاغات السرية الآمنة</title>
+    <style>
+        :root {
+            --primary-color: #1e293b;
+            --accent-color: #dc2626;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --card-bg: #ffffff;
+            --text-color: #334155;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-gradient); margin: 0; padding: 20px; color: var(--text-color); min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .container { width: 100%; max-width: 650px; background: var(--card-bg); padding: 35px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); box-sizing: border-box; }
+        h2 { text-align: center; color: var(--primary-color); margin-bottom: 8px; font-size: 26px; }
+        .subtitle { text-align: center; font-size: 14px; color: #64748b; margin-bottom: 25px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #1e293b; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 15px; transition: all 0.3s ease; background: #f8fafc; }
+        input:focus, select:focus, textarea:focus { border-color: #3b82f6; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        textarea { resize: vertical; height: 90px; }
+        .file-upload-box { border: 2px dashed #cbd5e1; padding: 20px; text-align: center; border-radius: 8px; background: #f8fafc; cursor: pointer; transition: 0.3s; }
+        .file-upload-box:hover { border-color: #3b82f6; background: #f1f5f9; }
+        button[type="submit"] { background: var(--accent-color); color: white; padding: 14px; border: none; border-radius: 8px; width: 100%; font-size: 17px; cursor: pointer; font-weight: bold; transition: background 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); }
+        button[type="submit"]:hover { background: #b91c1c; }
+        .alert { padding: 12px; margin-bottom: 20px; border-radius: 8px; text-align: center; font-weight: 600; background: #dcfce7; color: #166534; }
+        .privacy-notice { text-align: center; margin-top: 25px; font-size: 13px; color: #dc2626; font-weight: bold; background: #fef2f2; padding: 12px; border-radius: 8px; border: 1px dashed #f87171; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>منصة البلاغات السرية الآمنة</h2>
+    <p class="subtitle">🔒 تعمل بمعايير تشفير وخصوصية عالية لضمان أمان وسلامة بياناتك</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form action="/submit" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="report_type">تصنيف الحالة / البلاغ:</label>
+            <select id="report_type" name="report_type" required>
+                <option value="شبيح">شبيح</option>
+                <option value="تاجر مخدرات">تاجر مخدرات</option>
+                <option value="لص">لص</option>
+                <option value="آخر">آخر</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="suspect_name">الاسم الثلاثي للمشتبه به (أو اللقب المعروف به):</label>
+            <input type="text" id="suspect_name" name="suspect_name" required placeholder="أدخل الاسم الثلاثي أو اللقب">
+        </div>
+
+        <div class="form-group">
+            <label for="province">المحافظة:</label>
+            <select id="province" name="province" required>
+                <option value="">اختر المحافظة</option>
+                {% for p in provinces %}
+                    <option value="{{ p }}">{{ p }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="nationality">الجنسية (إن كان من غير جنسية):</label>
+            <input type="text" id="nationality" name="nationality" value="سوري" placeholder="أدخل الجنسية إذا لم يكن سورياً">
+        </div>
+
+        <div class="form-group">
+            <label for="current_address">مكان السكن الحالي (مع التفاصيل إن وجدت):</label>
+            <input type="text" id="current_address" name="current_address" placeholder="المحافظة، الحي، النقطة الدالة">
+        </div>
+
+        <div class="form-group">
+            <label for="combat_history">أين كان يقاتل ومع من؟ (إن وجد):</label>
+            <textarea id="combat_history" name="combat_history" placeholder="التفاصيل العسكرية أو الجهة التي ينتمي إليها..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="social_link">رابط موقعه عبر التواصل الاجتماعي (واتساب، فيسبوك، إكس، إنستغرام):</label>
+            <input type="text" id="social_link" name="social_link" placeholder="رابط البروفايل أو رقم الواتساب">
+        </div>
+
+        <div class="form-group">
+            <label for="phone">رقم الهاتف (إن وجد):</label>
+            <input type="text" id="phone" name="phone" placeholder="رقم الهاتف">
+        </div>
+
+        <div class="form-group">
+            <label>إرفاق صورة أو مقطع فيديو للإدانة:</label>
+            <div class="file-upload-box" onclick="document.getElementById('media_file').click()">
+                📁 اضغط هنا لاختيار صورة أو فيديو من جهازك
+                <input type="file" id="media_file" name="media_file" accept="image/*,video/*" style="display: none;" onchange="document.getElementById('file-name').innerText = 'الملف المختار: ' + this.files[0].name">
+            </div>
+            <div id="file-name" style="margin-top: 8px; font-size: 13px; color: #2563eb; font-weight: bold; text-align: center;"></div>
+        </div>
+
+        <button type="submit">إرسال البلاغ بشكل آمن</button>
+    </form>
+
+    <div class="privacy-notice">
+        كل بياناتك ومعلوماتك سرية تماماً وآمنة ولا يمكن لأحد الاطلاع عليها.
+    </div>
+</div>
+</body>
+</html>
