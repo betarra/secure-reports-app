@@ -60,7 +60,7 @@ def submit_report():
             'filename': filename  # تم توحيد اسم الحقل ليتطابق مع القالب
         })
         
-        return "تم إرسال البلاغ بنجاح وتشفيره بنجاح!"
+        return "success" 
     except Exception as e:
         return f"حدث خطأ أثناء الإرسال: {e}"
 
