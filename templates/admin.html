@@ -5,23 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة تحكم المسؤول - البلاغات الواردة</title>
     <style>
-        body { font-family: Tahoma, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { color: #2c3e50; text-align: center; }
-        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .report-card { background: #fff; border: 1px solid #ddd; border-right: 5px solid #3498db; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
-        .report-card.شبيح { border-right-color: #e74c3c; }
-        .report-card.تاجر_مخدرات { border-right-color: #e67e22; }
-        .report-card.لص { border-right-color: #f1c40f; }
-        .report-card.آخر { border-right-color: #9b59b6; }
-        .report-header { font-weight: bold; font-size: 16px; margin-bottom: 10px; color: #2c3e50; }
-        .report-details { font-size: 14px; line-height: 1.6; margin-bottom: 10px; }
-        .actions { display: flex; gap: 10px; margin-top: 10px; }
-        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; text-decoration: none; color: white; display: inline-block; }
-        .btn-print { background-color: #3498db; }
-        .btn-delete { background-color: #e74c3c; }
-        .btn-media { background-color: #27ae60; }
-        .no-reports { text-align: center; color: #7f8c8d; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f1f5f9; margin: 0; padding: 20px; color: #334155; }
+        .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h2 { color: #1e293b; text-align: center; margin-bottom: 25px; }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; }
+        .report-card { background: #fff; border: 1px solid #cbd5e1; border-right: 6px solid #3b82f6; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .report-card.شبيح { border-right-color: #dc2626; }
+        .report-card.تاجر_مخدرات { border-right-color: #d97706; }
+        .report-card.لص { border-right-color: #ca8a04; }
+        .report-card.آخر { border-right-color: #7c3aed; }
+        .report-header { font-weight: bold; font-size: 17px; margin-bottom: 12px; color: #1e293b; }
+        .report-details { font-size: 15px; line-height: 1.8; margin-bottom: 15px; }
+        .media-preview { margin: 15px 0; }
+        .media-preview img, .media-preview video { max-width: 250px; max-height: 200px; border-radius: 6px; border: 1px solid #cbd5e1; display: block; }
+        .actions { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; text-decoration: none; color: white; display: inline-block; font-weight: 600; }
+        .btn-print { background-color: #2563eb; }
+        .btn-delete { background-color: #dc2626; }
+        .no-reports { text-align: center; color: #64748b; padding: 40px; font-size: 16px; }
         @media print {
             body { background: #fff; padding: 0; }
             .container { box-shadow: none; width: 100%; max-width: 100%; }
@@ -33,15 +34,15 @@
 <body>
 <div class="container">
     <div class="header-bar">
-        <h2>لوحة تحكم المسؤول - إدارة البلاغات</h2>
-        <button onclick="window.print()" class="btn btn-print" style="padding: 10px 15px; font-size: 15px;">🖨️ طباعة التقارير</button>
+        <h2>لوحة تحكم المسؤول - البلاغات الواردة</h2>
+        <button onclick="window.print()" class="btn btn-print" style="padding: 10px 20px; font-size: 15px;">🖨️ طباعة التقارير</button>
     </div>
 
     {% if reports %}
         {% for r in reports %}
             <div class="report-card {{ r.report_type | replace(' ', '_') }}">
                 <div class="report-header">
-                    التصنيف: [ {{ r.report_type }} ] - المشتبه به: {{ r.suspect_name }}
+                    التصنيف: [ {{ r.report_type }} ] — المشتبه به: {{ r.suspect_name }}
                 </div>
                 <div class="report-details">
                     📍 <strong>المحافظة:</strong> {{ r.province }} | 🌍 <strong>الجنسية:</strong> {{ r.nationality }}<br>
@@ -50,11 +51,26 @@
                     🔗 <strong>رابط التواصل:</strong> <a href="{{ r.social_link }}" target="_blank">{{ r.social_link or 'غير متوفر' }}</a><br>
                     📞 <strong>رقم الهاتف:</strong> {{ r.phone or 'غير متوفر' }}
                 </div>
+
+                {% if r.media_filename %}
+                    <div class="media-preview">
+                        <strong>المرفق:</strong><br>
+                        {% if r.media_filename.lower().endswith(('png', 'jpg', 'jpeg', 'gif', 'webp')) %}
+                            <a href="{{ url_for('static', filename='uploads/' + r.media_filename) }}" target="_blank">
+                                <img src="{{ url_for('static', filename='uploads/' + r.media_filename) }}" alt="مرفق البلاغ">
+                            </a>
+                        {% elif r.media_filename.lower().endswith(('mp4', 'mov', 'avi', 'mkv')) %}
+                            <video controls>
+                                <source src="{{ url_for('static', filename='uploads/' + r.media_filename) }}" type="video/mp4">
+                                متصفحك لا يدعم عرض الفيديو
+                            </video>
+                        {% else %}
+                            <a href="{{ url_for('static', filename='uploads/' + r.media_filename) }}" target="_blank" class="btn btn-print">تحميل الملف المرفق</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
                 
                 <div class="actions">
-                    {% if r.media_url %}
-                        <a href="{{ r.media_url }}" target="_blank" class="btn btn-media">📁 عرض / تحميل الملف المرفق</a>
-                    {% endif %}
                     <button onclick="window.print()" class="btn btn-print">طباعة التقرير</button>
                     <form action="{{ url_for('delete_report', report_id=r.id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف هذا البلاغ؟');" style="display:inline;">
                         <button type="submit" class="btn btn-delete">حذف</button>

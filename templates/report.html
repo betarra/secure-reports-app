@@ -5,35 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>منصة البلاغات السرية الآمنة</title>
     <style>
-        body { font-family: Tahoma, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #2c3e50; }
-        .subtitle { text-align: center; font-size: 14px; color: #7f8c8d; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #34495e; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
-        textarea { resize: vertical; height: 80px; }
-        button { background-color: #e74c3c; color: white; padding: 12px; border: none; border-radius: 5px; width: 100%; font-size: 16px; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #c0392b; }
-        .alert { padding: 10px; margin-bottom: 15px; border-radius: 5px; text-align: center; }
-        .alert-success { background-color: #d4edda; color: #155724; }
-        .privacy-notice { text-align: center; margin-top: 20px; font-size: 13px; color: #e74c3c; font-weight: bold; background: #fdf0ed; padding: 10px; border-radius: 5px; border: 1px dashed #e74c3c; }
+        :root {
+            --primary-color: #1e293b;
+            --accent-color: #dc2626;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --card-bg: #ffffff;
+            --text-color: #334155;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-gradient); margin: 0; padding: 20px; color: var(--text-color); min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .container { width: 100%; max-width: 650px; background: var(--card-bg); padding: 35px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); box-sizing: border-box; }
+        h2 { text-align: center; color: var(--primary-color); margin-bottom: 8px; font-size: 26px; }
+        .subtitle { text-align: center; font-size: 14px; color: #64748b; margin-bottom: 25px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #1e293b; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 15px; transition: all 0.3s ease; background: #f8fafc; }
+        input:focus, select:focus, textarea:focus { border-color: #3b82f6; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        textarea { resize: vertical; height: 90px; }
+        .file-upload-box { border: 2px dashed #cbd5e1; padding: 20px; text-align: center; border-radius: 8px; background: #f8fafc; cursor: pointer; transition: 0.3s; }
+        .file-upload-box:hover { border-color: #3b82f6; background: #f1f5f9; }
+        button[type="submit"] { background: var(--accent-color); color: white; padding: 14px; border: none; border-radius: 8px; width: 100%; font-size: 17px; cursor: pointer; font-weight: bold; transition: background 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); }
+        button[type="submit"]:hover { background: #b91c1c; }
+        .alert { padding: 12px; margin-bottom: 20px; border-radius: 8px; text-align: center; font-weight: 600; background: #dcfce7; color: #166534; }
+        .privacy-notice { text-align: center; margin-top: 25px; font-size: 13px; color: #dc2626; font-weight: bold; background: #fef2f2; padding: 12px; border-radius: 8px; border: 1px dashed #f87171; }
     </style>
 </head>
 <body>
 <div class="container">
     <h2>منصة البلاغات السرية الآمنة</h2>
-    <p class="subtitle">تعمل بمعايير خصوصية عالية لضمان أمان وسلامة البيانات المقدمة</p>
+    <p class="subtitle">🔒 تعمل بمعايير تشفير وخصوصية عالية لضمان أمان وسلامة بياناتك</p>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
-                <div class="alert alert-success">{{ message }}</div>
+                <div class="alert">{{ message }}</div>
             {% endfor %}
         {% endif %}
     {% endwith %}
 
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
         <div class="form-group">
             <label for="report_type">تصنيف الحالة / البلاغ:</label>
             <select id="report_type" name="report_type" required>
@@ -76,7 +85,7 @@
 
         <div class="form-group">
             <label for="social_link">رابط موقعه عبر التواصل الاجتماعي (واتساب، فيسبوك، إكس، إنستغرام):</label>
-            <input type="text" id="social_link" name="social_link" placeholder="رابط البروفایل أو رقم الواتساب">
+            <input type="text" id="social_link" name="social_link" placeholder="رابط البروفايل أو رقم الواتساب">
         </div>
 
         <div class="form-group">
@@ -85,11 +94,15 @@
         </div>
 
         <div class="form-group">
-            <label for="media_url">رابط صورة أو مقطع فيديو الإدانة (رابط مباشر):</label>
-            <input type="text" id="media_url" name="media_url" placeholder="رابط الصورة أو الفيديو">
+            <label>إرفاق صورة أو مقطع فيديو للإدانة:</label>
+            <div class="file-upload-box" onclick="document.getElementById('media_file').click()">
+                📁 اضغط هنا لاختيار صورة أو فيديو من جهازك
+                <input type="file" id="media_file" name="media_file" accept="image/*,video/*" style="display: none;" onchange="document.getElementById('file-name').innerText = 'الملف المختار: ' + this.files[0].name">
+            </div>
+            <div id="file-name" style="margin-top: 8px; font-size: 13px; color: #2563eb; font-weight: bold; text-align: center;"></div>
         </div>
 
-        <button type="submit">إرسال البلاغ</button>
+        <button type="submit">إرسال البلاغ بشكل آمن</button>
     </form>
 
     <div class="privacy-notice">
