@@ -119,5 +119,29 @@
         كل بياناتك ومعلوماتك سرية تماماً وآمنة ولا يمكن لأحد الاطلاع عليها.
     </div>
 </div>
+<script>
+    const form = document.getElementById('reportForm');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(form);
+            try {
+                const response = await fetch('/submit', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.text();
+                if (result.trim() === 'success') {
+                    form.reset(); // هذا السطر هو الذي يفرغ الحقول والصور تلقائياً
+                    alert("تم إرسال البلاغ وتشفيره بنجاح!"); // رسالة النجاح
+                } else {
+                    alert("حدث خطأ أثناء الإرسال.");
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+</script>
 </body>
 </html>
