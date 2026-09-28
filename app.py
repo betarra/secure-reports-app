@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.utils import secure_filename
 import firebase_admin
@@ -11,8 +12,6 @@ app.secret_key = 'your_secret_key_here'
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-import json
 
 # تهيئة اتصال فايربيز (Firebase Firestore)
 if not firebase_admin._apps:
@@ -58,7 +57,7 @@ def submit_report():
             'combat_history': combat_history,
             'social_link': social_link,
             'phone': phone,
-            'media_filename': filename
+            'filename': filename  # تم توحيد اسم الحقل ليتطابق مع القالب
         })
         
         return "تم إرسال البلاغ بنجاح وتشفيره بنجاح!"
@@ -70,7 +69,18 @@ def admin_panel():
     try:
         docs = db.collection('reports').stream()
         reports = [doc.to_dict() for doc in docs]
-        return render_template('admin.html', reports=reports)
+        
+        # تصنيف التقارير حسب نوع الحالة لتظهر في الخانات الأربع المخصصة
+        reports_shabih = [r for r in reports if r.get('report_type') == 'شبيح']
+        reports_drugs = [r for r in reports if r.get('report_type') == 'تاجر مخدرات']
+        reports_agent = [r for r in reports if r.get('report_type') == 'عميل']
+        reports_other = [r for r in reports if r.get('report_type') not in ['شبيح', 'تاجر مخدرات', 'عميل']]
+
+        return render_template('admin.html', 
+                               reports_shabih=reports_shabih,
+                               reports_drugs=reports_drugs,
+                               reports_agent=reports_agent,
+                               reports_other=reports_other)
     except Exception as e:
         return f"خطأ في جلب التقارير: {e}"
 
