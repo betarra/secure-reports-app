@@ -13,19 +13,25 @@
         h1 { color: #1e293b; font-size: 24px; }
         .btn { background-color: #2563eb; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
         .btn-danger { background-color: #dc2626; }
-        .categories-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        
+        /* شبكة الأعمدة الأربعة */
+        .categories-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; align-items: start; }
         .category-column { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; border-top: 4px solid #3b82f6; }
         .category-header { background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; font-weight: 700; font-size: 18px; color: #1e293b; display: flex; justify-content: space-between; align-items: center; }
-        .badge { background: #e0f2fe; color: #0369a1; padding: 3px 10px; border-radius: 20px; font-size: 13px; }
+        .badge { background: #e0f2fe; color: #0369a1; padding: 3px 10px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+        
         .reports-list { padding: 15px; display: flex; flex-direction: column; gap: 15px; max-height: 700px; overflow-y: auto; }
-        .report-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .report-title { font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 10px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 8px; }
-        .report-info { font-size: 14px; color: #475569; margin-bottom: 6px; display: flex; justify-content: space-between; }
+        .report-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: transform 0.2s; }
+        .report-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+        .report-title { font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 10px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .report-type-tag { font-size: 11px; background: #e2e8f0; color: #334155; padding: 2px 8px; border-radius: 4px; }
+        .report-info { font-size: 13px; color: #475569; margin-bottom: 6px; display: flex; justify-content: space-between; }
         .report-info span { font-weight: 600; color: #1e293b; }
-        .media-preview { margin-top: 10px; text-align: center; }
-        .media-preview a { color: #2563eb; font-size: 13px; text-decoration: none; }
+        .media-preview { margin-top: 10px; text-align: center; background: #f8fafc; padding: 8px; border-radius: 6px; }
+        .media-preview img { max-width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 5px; display: block; margin-left: auto; margin-right: auto; }
+        .media-preview a { color: #2563eb; font-size: 13px; text-decoration: none; font-weight: 600; }
         .card-actions { margin-top: 12px; display: flex; justify-content: flex-end; gap: 8px; }
-        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .btn-sm { padding: 5px 12px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -55,14 +61,20 @@
                     {% for r in reports %}
                         {% if r.get('report_type') == 'شبيح' %}
                         <div class="report-card">
-                            <div class="report-title">المشتبه به: {{ r.get('suspect_name', 'بدون اسم') }}</div>
+                            <div class="report-title">
+                                <span>{{ r.get('suspect_name', 'بدون اسم') }}</span>
+                                <span class="report-type-tag">شبيح</span>
+                            </div>
                             <div class="report-info">المحافظة: <span>{{ r.get('province', '-') }}</span></div>
                             <div class="report-info">الجنسية: <span>{{ r.get('nationality', '-') }}</span></div>
                             <div class="report-info">مكان السكن: <span>{{ r.get('current_address', '-') }}</span></div>
                             <div class="report-info">سجل القتال: <span>{{ r.get('combat_history', '-') }}</span></div>
                             <div class="report-info">رقم الهاتف: <span>{{ r.get('phone', '-') }}</span></div>
                             {% if r.get('media_filename') %}
-                            <div class="media-preview"><a href="/static/uploads/{{ r.get('media_filename') }}" target="_blank">عرض المرفق</a></div>
+                            <div class="media-preview">
+                                <img src="/static/uploads/{{ r.get('media_filename') }}" alt="مرفق">
+                                <a href="/static/uploads/{{ r.get('media_filename') }}" target="_blank">🔍 تكبير الصورة</a>
+                            </div>
                             {% endif %}
                             <div class="card-actions">
                                 <form action="/delete/{{ r.get('id') }}" method="POST" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
@@ -76,10 +88,10 @@
             </div>
 
             <!-- تصنيف تاجر مخدرات -->
-            <div class="category-column">
-                <div class="category-header" style="border-top-color: #f59e0b;">
+            <div class="category-column" style="border-top-color: #f59e0b;">
+                <div class="category-header">
                     <span>تاجر مخدرات</span>
-                    <span class="badge">
+                    <span class="badge" style="background: #fef3c7; color: #b45309;">
                         {% set count = namespace(value=0) %}
                         {% for r in reports if r.get('report_type') == 'تاجر مخدرات' %}{% set count.value = count.value + 1 %}{% endfor %}
                         {{ count.value }}
@@ -89,14 +101,20 @@
                     {% for r in reports %}
                         {% if r.get('report_type') == 'تاجر مخدرات' %}
                         <div class="report-card">
-                            <div class="report-title">المشتبه به: {{ r.get('suspect_name', 'بدون اسم') }}</div>
+                            <div class="report-title">
+                                <span>{{ r.get('suspect_name', 'بدون اسم') }}</span>
+                                <span class="report-type-tag">مخدرات</span>
+                            </div>
                             <div class="report-info">المحافظة: <span>{{ r.get('province', '-') }}</span></div>
                             <div class="report-info">الجنسية: <span>{{ r.get('nationality', '-') }}</span></div>
                             <div class="report-info">مكان السكن: <span>{{ r.get('current_address', '-') }}</span></div>
                             <div class="report-info">سجل القتال: <span>{{ r.get('combat_history', '-') }}</span></div>
                             <div class="report-info">رقم الهاتف: <span>{{ r.get('phone', '-') }}</span></div>
                             {% if r.get('media_filename') %}
-                            <div class="media-preview"><a href="/static/uploads/{{ r.get('media_filename') }}" target="_blank">عرض المرفق</a></div>
+                            <div class="media-preview">
+                                <img src="/static/uploads/{{ r.get('media_filename') }}" alt="مرفق">
+                                <a href="/static/uploads/{{ r.get('media_filename') }}" target="_blank">🔍 تكبير الصورة</a>
+                            </div>
                             {% endif %}
                             <div class="card-actions">
                                 <form action="/delete/{{ r.get('id') }}" method="POST" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
@@ -110,10 +128,10 @@
             </div>
 
             <!-- تصنيف عميل -->
-            <div class="category-column">
-                <div class="category-header" style="border-top-color: #10b981;">
+            <div class="category-column" style="border-top-color: #10b981;">
+                <div class="category-header">
                     <span>عميل</span>
-                    <span class="badge">
+                    <span class="badge" style="background: #d1fae5; color: #047857;">
                         {% set count = namespace(value=0) %}
                         {% for r in reports if r.get('report_type') == 'عميل' %}{% set count.value = count.value + 1 %}{% endfor %}
                         {{ count.value }}
@@ -123,14 +141,20 @@
                     {% for r in reports %}
                         {% if r.get('report_type') == 'عميل' %}
                         <div class="report-card">
-                            <div class="report-title">المشتبه به: {{ r.get('suspect_name', 'بدون اسم') }}</div>
+                            <div class="report-title">
+                                <span>{{ r.get('suspect_name', 'بدون اسم') }}</span>
+                                <span class="report-type-tag">عميل</span>
+                            </div>
                             <div class="report-info">المحافظة: <span>{{ r.get('province', '-') }}</span></div>
                             <div class="report-info">الجنسية: <span>{{ r.get('nationality', '-') }}</span></div>
                             <div class="report-info">مكان السكن: <span>{{ r.get('current_address', '-') }}</span></div>
                             <div class="report-info">سجل القتال: <span>{{ r.get('combat_history', '-') }}</span></div>
                             <div class="report-info">رقم الهاتف: <span>{{ r.get('phone', '-') }}</span></div>
                             {% if r.get('media_filename') %}
-                            <div class="media-preview"><a href="/static/uploads/{{ r.get('media_filename') }}" target="_blank">عرض المرفق</a></div>
+                            <div class="media-preview">
+                                <img src="/static/uploads/{{ r.get('media_filename') }}" alt="مرفق">
+                                <a href="/static/uploads/{{ r.get('media_filename') }}" target="_blank">🔍 تكبير الصورة</a>
+                            </div>
                             {% endif %}
                             <div class="card-actions">
                                 <form action="/delete/{{ r.get('id') }}" method="POST" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
@@ -144,10 +168,10 @@
             </div>
 
             <!-- تصنيف آخر -->
-            <div class="category-column">
-                <div class="category-header" style="border-top-color: #64748b;">
+            <div class="category-column" style="border-top-color: #64748b;">
+                <div class="category-header">
                     <span>آخر / أخرى</span>
-                    <span class="badge">
+                    <span class="badge" style="background: #f1f5f9; color: #475569;">
                         {% set count = namespace(value=0) %}
                         {% for r in reports if not r.get('report_type') or r.get('report_type') not in ['شبيح', 'تاجر مخدرات', 'عميل'] %}{% set count.value = count.value + 1 %}{% endfor %}
                         {{ count.value }}
@@ -157,14 +181,20 @@
                     {% for r in reports %}
                         {% if not r.get('report_type') or r.get('report_type') not in ['شبيح', 'تاجر مخدرات', 'عميل'] %}
                         <div class="report-card">
-                            <div class="report-title">المشتبه به: {{ r.get('suspect_name', 'بدون اسم') }}</div>
+                            <div class="report-title">
+                                <span>{{ r.get('suspect_name', 'بدون اسم') }}</span>
+                                <span class="report-type-tag">آخر</span>
+                            </div>
                             <div class="report-info">المحافظة: <span>{{ r.get('province', '-') }}</span></div>
                             <div class="report-info">الجنسية: <span>{{ r.get('nationality', '-') }}</span></div>
                             <div class="report-info">مكان السكن: <span>{{ r.get('current_address', '-') }}</span></div>
                             <div class="report-info">سجل القتال: <span>{{ r.get('combat_history', '-') }}</span></div>
                             <div class="report-info">رقم الهاتف: <span>{{ r.get('phone', '-') }}</span></div>
                             {% if r.get('media_filename') %}
-                            <div class="media-preview"><a href="/static/uploads/{{ r.get('media_filename') }}" target="_blank">عرض المرفق</a></div>
+                            <div class="media-preview">
+                                <img src="/static/uploads/{{ r.get('media_filename') }}" alt="مرفق">
+                                <a href="/static/uploads/{{ r.get('media_filename') }}" target="_blank">🔍 تكبير الصورة</a>
+                            </div>
                             {% endif %}
                             <div class="card-actions">
                                 <form action="/delete/{{ r.get('id') }}" method="POST" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
