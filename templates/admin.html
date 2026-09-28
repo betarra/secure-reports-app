@@ -6,7 +6,15 @@
     <title>لوحة تحكم المسؤول - البلاغات الواردة</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; }
+/* إخفاء محتوى الخانات افتراضياً */
+.category-content {
+    display: none;
+}
+/* إظهار محتوى الخانة فقط عند تفعيلها */
+.category-card.active .category-content {
+    display: block;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; }
         body { background-color: #f4f7f6; color: #333; padding: 20px; }
         
         .header-bar {
@@ -314,15 +322,20 @@
     </div>
 
     <script>
-        function toggleCategory(headerElement) {
-            const content = headerElement.nextElementSibling;
-            if (content.style.display === "none") {
-                content.style.display = "block";
-            } else {
-                content.style.display = "none";
-            }
-        }
-
+       function toggleCategory(header) {
+    const card = header.parentElement; // تحديد البطاقة الأب
+    const isActive = card.classList.contains('active');
+    
+    // إغلاق جميع البطاقات الأخرى أولاً
+    document.querySelectorAll('.category-card').forEach(c => {
+        c.classList.remove('active');
+    });
+    
+    // إذا لم تكن مفتوحة، قم بفتحها
+    if (!isActive) {
+        card.classList.add('active');
+    }
+} 
         function filterReports() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const selectedGov = document.getElementById('governorateFilter').value;
