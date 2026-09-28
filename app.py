@@ -12,11 +12,16 @@ UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+import json
+
 # تهيئة اتصال فايربيز (Firebase Firestore)
 if not firebase_admin._apps:
-    cred = credentials.Certificate("firebase_key.json")
+    if 'FIREBASE_KEY_JSON' in os.environ:
+        cred_dict = json.loads(os.environ['FIREBASE_KEY_JSON'])
+        cred = credentials.Certificate(cred_dict)
+    else:
+        cred = credentials.Certificate("firebase_key.json")
     firebase_admin.initialize_app(cred)
-
 db = firestore.client()
 
 @app.route('/')
