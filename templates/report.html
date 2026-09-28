@@ -42,7 +42,7 @@
         {% endif %}
     {% endwith %}
 
-    <form action="/submit" method="POST" enctype="multipart/form-data">
+    <form id="reportForm" action="/submit" method="POST" enctype="multipart/form-data">
         <div class="form-group">
             <label for="report_type">تصنيف الحالة / البلاغ:</label>
             <select id="report_type" name="report_type" required>
