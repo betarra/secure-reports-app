@@ -4,211 +4,275 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة تحكم المسؤول - البلاغات الواردة</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-        body { background-color: #f4f6f9; color: #333; padding: 20px; }
-        .container { max-width: 1400px; margin: 0 auto; }
-        header { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
-        h1 { color: #1e293b; font-size: 24px; }
-        .btn { background-color: #2563eb; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
-        .btn-danger { background-color: #dc2626; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; }
+        body { background-color: #f4f7f6; color: #333; padding: 20px; }
         
-        /* شبكة الأعمدة الأربعة */
-        .categories-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; align-items: start; }
-        .category-column { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; border-top: 4px solid #3b82f6; }
-        .category-header { background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; font-weight: 700; font-size: 18px; color: #1e293b; display: flex; justify-content: space-between; align-items: center; }
-        .badge { background: #e0f2fe; color: #0369a1; padding: 3px 10px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-bar h1 { font-size: 22px; color: #2c3e50; }
+
+        .controls-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input, .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .btn-print {
+            background-color: #1abc9c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-print:hover { background-color: #16a085; }
+
+        /* شبكة الخانات الأربع بجانب بعضها */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        @media (max-width: 1024px) {
+            .categories-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 600px) {
+            .categories-grid { grid-template-columns: 1fr; }
+        }
+
+        .category-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border-top: 4px solid #3498db;
+        }
+
+        .category-header {
+            padding: 15px;
+            background: #fafafa;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 16px;
+            border-bottom: 1px solid #eee;
+        }
+        .category-header:hover { background: #f0f0f0; }
+
+        .badge-count {
+            background: #3498db;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .category-content {
+            padding: 15px;
+            display: none; /* مخفية افتراضياً، تظهر عند الضغط */
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .category-content.active {
+            display: block;
+        }
+
+        .report-item {
+            background: #f9f9f9;
+            border: 1px solid #e1e1e1;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        .report-item p { margin: 5px 0; font-size: 13px; }
         
-        .reports-list { padding: 15px; display: flex; flex-direction: column; gap: 15px; max-height: 700px; overflow-y: auto; }
-        .report-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: transform 0.2s; }
-        .report-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
-        .report-title { font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 10px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .report-type-tag { font-size: 11px; background: #e2e8f0; color: #334155; padding: 2px 8px; border-radius: 4px; }
-        .report-info { font-size: 13px; color: #475569; margin-bottom: 6px; display: flex; justify-content: space-between; }
-        .report-info span { font-weight: 600; color: #1e293b; }
-        .media-preview { margin-top: 10px; text-align: center; background: #f8fafc; padding: 8px; border-radius: 6px; }
-        .media-preview img { max-width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 5px; display: block; margin-left: auto; margin-right: auto; }
-        .media-preview a { color: #2563eb; font-size: 13px; text-decoration: none; font-weight: 600; }
-        .card-actions { margin-top: 12px; display: flex; justify-content: flex-end; gap: 8px; }
-        .btn-sm { padding: 5px 12px; font-size: 12px; }
+        /* نافذة اختيار الأشخاص للطباعة */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-header { font-weight: bold; margin-bottom: 15px; font-size: 18px; display: flex; justify-content: space-between; }
+        .close-modal { cursor: pointer; color: #e74c3c; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <h1>لوحة تحكم المسؤول - البلاغات الواردة</h1>
-            <div>
-                <button class="btn" onclick="window.print()">🖨️ طباعة التقارير</button>
-            </div>
-        </header>
-
-        <!-- شبكة التصنيفات -->
-        <div class="categories-grid">
-            
-            <!-- تصنيف شبيح -->
-            <div class="category-column">
-                <div class="category-header">
-                    <span>شبيح</span>
-                    <span class="badge">
-                        {% set count = namespace(value=0) %}
-                        {% for r in reports if r.get('report_type') == 'شبيح' %}{% set count.value = count.value + 1 %}{% endfor %}
-                        {{ count.value }}
-                    </span>
-                </div>
-                <div class="reports-list">
-                    {% for r in reports %}
-                        {% if r.get('report_type') == 'شبيح' %}
-                        <div class="report-card">
-                            <div class="report-title">
-                                <span>{{ r.get('suspect_name', 'بدون اسم') }}</span>
-                                <span class="report-type-tag">شبيح</span>
-                            </div>
-                            <div class="report-info">المحافظة: <span>{{ r.get('province', '-') }}</span></div>
-                            <div class="report-info">الجنسية: <span>{{ r.get('nationality', '-') }}</span></div>
-                            <div class="report-info">مكان السكن: <span>{{ r.get('current_address', '-') }}</span></div>
-                            <div class="report-info">سجل القتال: <span>{{ r.get('combat_history', '-') }}</span></div>
-                            <div class="report-info">رقم الهاتف: <span>{{ r.get('phone', '-') }}</span></div>
-                            {% if r.get('media_filename') %}
-                            <div class="media-preview">
-                                <img src="/static/uploads/{{ r.get('media_filename') }}" alt="مرفق">
-                                <a href="/static/uploads/{{ r.get('media_filename') }}" target="_blank">🔍 تكبير الصورة</a>
-                            </div>
-                            {% endif %}
-                            <div class="card-actions">
-                                <form action="/delete/{{ r.get('id') }}" method="POST" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
-                                    <button type="submit" class="btn btn-danger btn-sm">حذف</button>
-                                </form>
-                            </div>
-                        </div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- تصنيف تاجر مخدرات -->
-            <div class="category-column" style="border-top-color: #f59e0b;">
-                <div class="category-header">
-                    <span>تاجر مخدرات</span>
-                    <span class="badge" style="background: #fef3c7; color: #b45309;">
-                        {% set count = namespace(value=0) %}
-                        {% for r in reports if r.get('report_type') == 'تاجر مخدرات' %}{% set count.value = count.value + 1 %}{% endfor %}
-                        {{ count.value }}
-                    </span>
-                </div>
-                <div class="reports-list">
-                    {% for r in reports %}
-                        {% if r.get('report_type') == 'تاجر مخدرات' %}
-                        <div class="report-card">
-                            <div class="report-title">
-                                <span>{{ r.get('suspect_name', 'بدون اسم') }}</span>
-                                <span class="report-type-tag">مخدرات</span>
-                            </div>
-                            <div class="report-info">المحافظة: <span>{{ r.get('province', '-') }}</span></div>
-                            <div class="report-info">الجنسية: <span>{{ r.get('nationality', '-') }}</span></div>
-                            <div class="report-info">مكان السكن: <span>{{ r.get('current_address', '-') }}</span></div>
-                            <div class="report-info">سجل القتال: <span>{{ r.get('combat_history', '-') }}</span></div>
-                            <div class="report-info">رقم الهاتف: <span>{{ r.get('phone', '-') }}</span></div>
-                            {% if r.get('media_filename') %}
-                            <div class="media-preview">
-                                <img src="/static/uploads/{{ r.get('media_filename') }}" alt="مرفق">
-                                <a href="/static/uploads/{{ r.get('media_filename') }}" target="_blank">🔍 تكبير الصورة</a>
-                            </div>
-                            {% endif %}
-                            <div class="card-actions">
-                                <form action="/delete/{{ r.get('id') }}" method="POST" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
-                                    <button type="submit" class="btn btn-danger btn-sm">حذف</button>
-                                </form>
-                            </div>
-                        </div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- تصنيف عميل -->
-            <div class="category-column" style="border-top-color: #10b981;">
-                <div class="category-header">
-                    <span>عميل</span>
-                    <span class="badge" style="background: #d1fae5; color: #047857;">
-                        {% set count = namespace(value=0) %}
-                        {% for r in reports if r.get('report_type') == 'عميل' %}{% set count.value = count.value + 1 %}{% endfor %}
-                        {{ count.value }}
-                    </span>
-                </div>
-                <div class="reports-list">
-                    {% for r in reports %}
-                        {% if r.get('report_type') == 'عميل' %}
-                        <div class="report-card">
-                            <div class="report-title">
-                                <span>{{ r.get('suspect_name', 'بدون اسم') }}</span>
-                                <span class="report-type-tag">عميل</span>
-                            </div>
-                            <div class="report-info">المحافظة: <span>{{ r.get('province', '-') }}</span></div>
-                            <div class="report-info">الجنسية: <span>{{ r.get('nationality', '-') }}</span></div>
-                            <div class="report-info">مكان السكن: <span>{{ r.get('current_address', '-') }}</span></div>
-                            <div class="report-info">سجل القتال: <span>{{ r.get('combat_history', '-') }}</span></div>
-                            <div class="report-info">رقم الهاتف: <span>{{ r.get('phone', '-') }}</span></div>
-                            {% if r.get('media_filename') %}
-                            <div class="media-preview">
-                                <img src="/static/uploads/{{ r.get('media_filename') }}" alt="مرفق">
-                                <a href="/static/uploads/{{ r.get('media_filename') }}" target="_blank">🔍 تكبير الصورة</a>
-                            </div>
-                            {% endif %}
-                            <div class="card-actions">
-                                <form action="/delete/{{ r.get('id') }}" method="POST" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
-                                    <button type="submit" class="btn btn-danger btn-sm">حذف</button>
-                                </form>
-                            </div>
-                        </div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- تصنيف آخر -->
-            <div class="category-column" style="border-top-color: #64748b;">
-                <div class="category-header">
-                    <span>آخر / أخرى</span>
-                    <span class="badge" style="background: #f1f5f9; color: #475569;">
-                        {% set count = namespace(value=0) %}
-                        {% for r in reports if not r.get('report_type') or r.get('report_type') not in ['شبيح', 'تاجر مخدرات', 'عميل'] %}{% set count.value = count.value + 1 %}{% endfor %}
-                        {{ count.value }}
-                    </span>
-                </div>
-                <div class="reports-list">
-                    {% for r in reports %}
-                        {% if not r.get('report_type') or r.get('report_type') not in ['شبيح', 'تاجر مخدرات', 'عميل'] %}
-                        <div class="report-card">
-                            <div class="report-title">
-                                <span>{{ r.get('suspect_name', 'بدون اسم') }}</span>
-                                <span class="report-type-tag">آخر</span>
-                            </div>
-                            <div class="report-info">المحافظة: <span>{{ r.get('province', '-') }}</span></div>
-                            <div class="report-info">الجنسية: <span>{{ r.get('nationality', '-') }}</span></div>
-                            <div class="report-info">مكان السكن: <span>{{ r.get('current_address', '-') }}</span></div>
-                            <div class="report-info">سجل القتال: <span>{{ r.get('combat_history', '-') }}</span></div>
-                            <div class="report-info">رقم الهاتف: <span>{{ r.get('phone', '-') }}</span></div>
-                            {% if r.get('media_filename') %}
-                            <div class="media-preview">
-                                <img src="/static/uploads/{{ r.get('media_filename') }}" alt="مرفق">
-                                <a href="/static/uploads/{{ r.get('media_filename') }}" target="_blank">🔍 تكبير الصورة</a>
-                            </div>
-                            {% endif %}
-                            <div class="card-actions">
-                                <form action="/delete/{{ r.get('id') }}" method="POST" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
-                                    <button type="submit" class="btn btn-danger btn-sm">حذف</button>
-                                </form>
-                            </div>
-                        </div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-
+    <!-- شريط التحكم العلوي -->
+    <div class="header-bar">
+        <h1>لوحة تحكم المسؤول - البلاغات الواردة</h1>
+        <div class="controls-group">
+            <input type="text" id="searchInput" class="search-input" placeholder="بحث بالاسم الكامل..." onkeyup="filterReports()">
+            <select id="governorateFilter" class="filter-select" onchange="filterReports()">
+                <option value="">جميع المحافظات</option>
+                <option value="دمشق">دمشق</option>
+                <option value="ريف دمشق">ريف دمشق</option>
+                <option value="حلب">حلب</option>
+                <option value="حمص">حمص</option>
+                <option value="حماة">حماة</option>
+                <option value="إدلب">إدلب</option>
+                <option value="اللاذقية">اللاذقية</option>
+                <option value="طرطوس">طرطوس</option>
+                <option value="دير الزور">دير الزور</option>
+                <option value="الرقة">الرقة</option>
+                <option value="الحسكة">الحسكة</option>
+                <option value="درعا">درعا</option>
+                <option value="السويداء">السويداء</option>
+                <option value="القنيطرة">القنيطرة</option>
+            </select>
+            <button class="btn-print" onclick="openPrintModal()"><i class="fa fa-print"></i> طباعة التقارير</button>
         </div>
     </div>
 
+    <!-- الخانات الأربع بجانب بعضها -->
+    <div class="categories-grid" id="categoriesContainer">
+        <!-- الخانة الأولى -->
+        <div class="category-card">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>شبيح</span>
+                <span class="badge-count">1</span>
+            </div>
+            <div class="category-content active">
+                <div class="report-item" data-name="داهو وود" data-gov="دير الزور">
+                    <p><strong>الاسم:</strong> داهو وود</p>
+                    <p><strong>المحافظة:</strong> دير الزور</p>
+                    <p><strong>الجنسية:</strong> سوري</p>
+                    <p><strong>مكان السكن:</strong> درعا بيت ياشوط</p>
+                    <p><strong>سجل القتال:</strong> مع إيران</p>
+                    <p><strong>رقم الهاتف:</strong> 888765</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- الخانة الثانية -->
+        <div class="category-card">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>تاجر مخدرات</span>
+                <span class="badge-count">0</span>
+            </div>
+            <div class="category-content">
+                <p style="text-align: center; color: #888; font-size: 13px;">لا توجد بلاغات حالياً</p>
+            </div>
+        </div>
+
+        <!-- الخانة الثالثة -->
+        <div class="category-card">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>عميل</span>
+                <span class="badge-count">0</span>
+            </div>
+            <div class="category-content">
+                <p style="text-align: center; color: #888; font-size: 13px;">لا توجد بلاغات حالياً</p>
+            </div>
+        </div>
+
+        <!-- الخانة الرابعة -->
+        <div class="category-card">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span>أخرى / تواصل</span>
+                <span class="badge-count">0</span>
+            </div>
+            <div class="category-content">
+                <p style="text-align: center; color: #888; font-size: 13px;">لا توجد بلاغات حالياً</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة اختيار الأشخاص للطباعة -->
+    <div class="modal" id="printModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>اختر الأشخاص للطباعة</span>
+                <span class="close-modal" onclick="closePrintModal()">&times;</span>
+            </div>
+            <div id="printPersonsList" style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 8px;"><input type="checkbox" value="داهو وود"> داهو وود (شبيح - دير الزور)</label>
+            </div>
+            <button class="btn-print" style="width: 100%; justify-content: center;" onclick="printSelected()">طباعة المحدد</button>
+        </div>
+    </div>
+
+    <script>
+        // إظهار أو إخفاء محتوى الخانة عند الضغط على العنوان
+        function toggleCategory(headerElement) {
+            const content = headerElement.nextElementSibling;
+            content.classList.toggle('active');
+        }
+
+        // البحث والتصفية حسب الاسم أو المحافظة
+        function filterReports() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const selectedGov = document.getElementById('governorateFilter').value;
+            
+            const reports = document.querySelectorAll('.report-item');
+            reports.forEach(report => {
+                const name = report.getAttribute('data-name').toLowerCase();
+                const gov = report.getAttribute('data-gov');
+                
+                const matchesSearch = name.includes(searchTerm);
+                const matchesGov = !selectedGov || gov === selectedGov;
+
+                if (matchesSearch && matchesGov) {
+                    report.style.display = 'block';
+                    // توسيع الخانة تلقائياً عند البحث المطابق
+                    report.closest('.category-content').classList.add('active');
+                } else {
+                    report.style.display = 'none';
+                }
+            });
+        }
+
+        // فتح وإغلاق نافذة الطباعة
+        function openPrintModal() {
+            document.getElementById('printModal').style.display = 'flex';
+        }
+        function closePrintModal() {
+            document.getElementById('printModal').style.display = 'none';
+        }
+        function printSelected() {
+            window.print();
+        }
+    </script>
 </body>
 </html>
