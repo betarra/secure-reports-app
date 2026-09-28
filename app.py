@@ -68,7 +68,11 @@ def submit_report():
 def admin_panel():
     try:
         docs = db.collection('reports').stream()
-        reports = [doc.to_dict() for doc in docs]
+        reports = []
+        for doc in docs:
+            r_data = doc.to_dict()
+            r_data['id'] = doc.id  # ضمان جلب معرف الوثيقة من فايربيز مباشرة
+            reports.append(r_data)
         
         # تصنيف التقارير حسب نوع الحالة لتظهر في الخانات الأربع المخصصة
         reports_shabih = [r for r in reports if r.get('report_type') == 'شبيح']
