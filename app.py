@@ -6,7 +6,7 @@ from firebase_admin import credentials, firestore
 app = Flask(__name__)
 app.secret_key = 'super_secret_security_key'
 
-# تهيئة Firebase Firestore بشكل آمن ومحمي
+# تهيئة Firebase Firestore
 try:
     cred = credentials.Certificate('firebase_key.json')
     firebase_admin.initialize_app(cred)
@@ -18,18 +18,20 @@ except Exception as e:
 def index():
     return render_template('report.html')
 
-# استقبال وحفظ الحقول الستة كاملة ومطابقة 100% إملائياً
+# استقبال وحفظ الحقول بناءً على مسميات الفايربيس الخاصة بك
 @app.route('/submit', methods=['POST'])
 def submit_report():
     try:
         report_data = {
             'suspect_name': request.form.get('suspect_name'),
-            'category': request.form.get('category'),           # تم ضبط المسميات بدقة هنا
+            'report_type': request.form.get('category'),          # مطابقة لـ report_type
             'province': request.form.get('province'),
-            'work_details': request.form.get('work_details'),
-            'media_link': request.form.get('media_data'), 
+            'combat_history': request.form.get('work_details'),    # مطابقة لـ combat_history
+            'filename': request.form.get('media_data'),            # مطابقة لـ filename لحفظ الصورة
             'social_link': request.form.get('social_link'),
             'phone': request.form.get('phone'),
+            'current_address': request.form.get('current_address'),# مطابقة لـ current_address
+            'nationality': request.form.get('nationality', 'سوري'),
             'details': request.form.get('details'),
             'created_at': firestore.SERVER_TIMESTAMP
         }
