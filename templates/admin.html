@@ -34,13 +34,11 @@
 <body>
     <div class="container">
         
-        <!-- رأس الصفحة -->
         <div class="header">
             <h1>لوحة تحكم المسؤول - البلاغات الواردة</h1>
             <a href="/" target="_blank" class="btn-link">فتح نموذج البلاغ</a>
         </div>
 
-        <!-- أزرار التصنيفات المعزولة الصلبة -->
         <div class="tabs-grid">
             <button onclick="filterReports('شبيح')" class="tab-btn">
                 <span style="display: block; color: #94a3b8; font-size: 12px; margin-bottom: 4px;">فحص تصنيف</span>
@@ -60,7 +58,6 @@
             </button>
         </div>
 
-        <!-- منطقة التقارير -->
         <div class="content-box">
             <h2 id="categoryTitle" class="content-title">الرجاء اختيار تصنيف من الأعلى لعرض بلاغاته بشكل معزول ومستقل</h2>
             
@@ -73,9 +70,7 @@
 
     </div>
 
-    <!-- مصفوفة نقل البيانات المؤمنة برمجياً من السيرفر -->
     <div id="temp-data" data-reports='{{ reports | tojson | safe }}' style="display: none;"></div>
-
     <script>
         const dataElement = document.getElementById('temp-data');
         const allReports = JSON.parse(dataElement.getAttribute('data-reports') || '[]');
@@ -103,33 +98,37 @@
                 const reportId = report.id || '';
 
                 let mediaSection = '<div><strong class="info-label" style="font-size: 13px;">🎞️ الأدلة المرفقة:</strong> <span style="color: #64748b; font-size: 13px;">لم يتم رفع أي ملفات وسائط</span></div>';
-                if (report.media_link && report.media_link.trim() !== '') {
+                if (report.filename && report.filename.trim() !== '') {
                     mediaSection = '<div class="media-box">' +
                                    '<span class="block-title" style="font-size: 13px; margin-bottom: 6px;">📷 صورة الدليل المرفوعة الحقيقية:</span>' +
-                                   '<img src="' + report.media_link + '" style="max-width: 100%; max-height: 160px; border-radius: 6px; margin: 0 auto 10px auto; display: block; border: 1px solid #334155;">' +
-                                   '<a href="' + report.media_link + '" download="evidence_file.jpg" class="download-btn">تحميل صورة الدليل للجهاز</a>' +
+                                   '<img src="' + report.filename + '" style="max-width: 100%; max-height: 160px; border-radius: 6px; margin: 0 auto 10px auto; display: block; border: 1px solid #334155;">' +
+                                   '<a href="' + report.filename + '" download="evidence_file.jpg" class="download-btn">تحميل صورة الدليل للجهاز</a>' +
                                    '</div>';
                 }
 
-                // صياغة مجزأة آمنة تمنع كسر السطور وسقوط علامات الاقتباس نهائياً في محرر VS Code
+                // قراءة دقيقة مبنية على المسميات الفعلية لقاعدة بياناتك الظاهرة في الصورة السابقة
                 let cardHTML = '<div class="info-grid">';
-                cardHTML += '<div><span class="info-label">الاسم:</span> ' + (report.suspect_name || 'بدون اسم') + '</div>';
-                cardHTML += '<div><span class="info-label">المحافظة:</span> ' + (report.province || 'غير محددة') + '</div>';
+                cardHTML += '<div><span class="info-grid"><span class="info-label">الاسم:</span> ' + (report.suspect_name || 'بدون اسم') + '</span></div>';
+                cardHTML += '<div><span class="info-grid"><span class="info-label">المحافظة:</span> ' + (report.province || 'غير محددة') + '</span></div>';
+                cardHTML += '<div><span class="info-grid"><span class="info-label">الجنسية:</span> ' + (report.nationality || 'سوري') + '</span></div>';
+                cardHTML += '<div><span class="info-grid"><span class="info-label">مكان السكن:</span> ' + (report.current_address || 'غير محدد') + '</span></div>';
                 cardHTML += '<div style="grid-column: span 2;"><span class="info-label">حسابات التواصل له:</span> ' + (report.social_link || 'غير متوفرة') + '</div>';
                 cardHTML += '<div style="grid-column: span 2;"><span class="info-label">رقم الجوال:</span> <span dir="ltr">' + (report.phone || 'غير متوفر') + '</span></div>';
                 cardHTML += '</div>';
 
                 cardHTML += '<div class="block-section">';
-                cardHTML += '<span class="block-title">أين كان يعمل ومع من:</span>';
-                cardHTML += '<div class="block-text">' + (report.work_details || 'لا توجد تفاصيل لجهة العمل المذكورة') + '</div>';
+                cardHTML += '<span class="block-title">أين كان يعمل ومع من (سجل الفعال):</span>';
+                cardHTML += '<div class="block-text">' + (report.combat_history || 'لا توجد تفاصيل لجهة العمل المذكورة') + '</div>';
                 cardHTML += '</div>';
 
                 cardHTML += mediaSection;
 
-                cardHTML += '<div class="block-section">';
-                cardHTML += '<span class="block-title">تفاصيل إضافية حول البلاغ الوارد:</span>';
-                cardHTML += '<div class="block-text">' + (report.details || 'لا توجد تفاصيل إضافية مضافة.') + '</div>';
-                cardHTML += '</div>';
+                if (report.details && report.details.trim() !== '') {
+                    cardHTML += '<div class="block-section">';
+                    cardHTML += '<span class="block-title">تفاصيل إضافية حول البلاغ:</span>';
+                    cardHTML += '<div class="block-text">' + report.details + '</div>';
+                    cardHTML += '</div>';
+                }
 
                 cardHTML += '<div class="action-bar">';
                 cardHTML += '<form action="/delete-report/' + reportId + '" method="POST" style="margin: 0;" onsubmit="return confirm(\'هل أنت متأكد من حذف هذا التقرير نهائياً؟\');">';
@@ -144,7 +143,7 @@
 
         function filterReports(category) {
             document.getElementById('categoryTitle').innerText = 'التقارير الواردة في خانة: ' + category;
-            const filtered = allReports.filter(function(r) { return r.category === category; });
+            const filtered = allReports.filter(function(r) { return r.report_type === category; });
             renderCards(filtered, category);
         }
     </script>
