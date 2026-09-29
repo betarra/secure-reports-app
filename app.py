@@ -18,16 +18,19 @@ except Exception as e:
 def index():
     return render_template('report.html')
 
-# المسار العام المعتمد والمنشور للناس لاستقبال البيانات
+# استقبال البلاغات بالحقول الستة الجديدة المتناسقة
 @app.route('/submit', methods=['POST'])
 def submit_report():
     try:
         report_data = {
             'suspect_name': request.form.get('suspect_name'),
+            'category': request.form.get('category'),
             'province': request.form.get('province'),
+            'work_details': request.form.get('work_details'),
+            'media_link': request.form.get('media_link'),
+            'social_link': request.form.get('social_link'),
             'phone': request.form.get('phone'),
             'details': request.form.get('details'),
-            'category': request.form.get('category'),
             'created_at': firestore.SERVER_TIMESTAMP
         }
         if db:
