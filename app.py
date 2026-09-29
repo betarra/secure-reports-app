@@ -1,10 +1,16 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
 import os
+from werkzeug.utils import secure_filename
 import firebase_admin
 from firebase_admin import credentials, firestore
 
 app = Flask(__name__)
 app.secret_key = 'super_secret_security_key'
+
+# إنشاء وتأمين مجلد رفع الملفات الحقيقية داخل السيرفر
+UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # تهيئة Firebase Firestore
 try:
@@ -18,26 +24,36 @@ except Exception as e:
 def index():
     return render_template('report.html')
 
-# استقبال وحفظ الحقول بناءً على مسميات الفايربيس الخاصة بك
+# استقبال وحفظ الحقول الستة كاملة مع الملف الحقيقي المرفوع
 @app.route('/submit', methods=['POST'])
 def submit_report():
     try:
+        file_url = ""
+        
+        # استلام الصورة أو الفيديو الحقيقي وحفظه باسم آمن ومحمي
+        if 'evidence_file' in request.files:
+            file = request.files['evidence_file']
+            if file and file.filename != '':
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                file_url = f"/static/uploads/{filename}"
+
         report_data = {
             'suspect_name': request.form.get('suspect_name'),
-            'report_type': request.form.get('category'),          # مطابقة لـ report_type
+            'report_type': request.form.get('category'),
             'province': request.form.get('province'),
-            'combat_history': request.form.get('work_details'),    # مطابقة لـ combat_history
-            'filename': request.form.get('media_data'),            # مطابقة لـ filename لحفظ الصورة
+            'combat_history': request.form.get('work_details'),
+            'filename': file_url,                                  # حفظ مسار الملف الحقيقي بداخل الفايربيس
             'social_link': request.form.get('social_link'),
             'phone': request.form.get('phone'),
-            'current_address': request.form.get('current_address'),# مطابقة لـ current_address
+            'current_address': request.form.get('current_address'),
             'nationality': request.form.get('nationality', 'سوري'),
             'details': request.form.get('details'),
             'created_at': firestore.SERVER_TIMESTAMP
         }
         if db:
             db.collection('reports').add(report_data)
-            flash('تم إرسال البلاغ وكافة المرفقات بنجاح وبسرية تامة', 'success')
+            flash('تم إرسال البلاغ والمرفقات الحقيقية بنجاح وبسرية تامة', 'success')
     except Exception as e:
         flash(f'حدث خطأ أثناء الإرسال: {str(e)}', 'error')
     
