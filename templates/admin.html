@@ -15,7 +15,7 @@
 <body class="bg-slate-900 text-slate-100 min-h-screen p-6">
     <div class="max-w-4xl mx-auto space-y-6">
         
-        <!-- رأس الصفحة الرئيسي -->
+        <!-- رأس الصفحة -->
         <div class="flex justify-between items-center bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-2xl">
             <h1 class="text-2xl font-bold text-emerald-400">لوحة تحكم المسؤول - البلاغات الواردة</h1>
             <a href="/" target="_blank" style="background-color: #059669; padding: 8px 16px; border-radius: 12px; color: white; text-decoration: none; font-size: 14px; font-weight: 500;">
@@ -23,7 +23,7 @@
             </a>
         </div>
 
-        <!-- أزرار التصنيفات المنسقة والموحدة برمجياً -->
+        <!-- أزرار التصنيفات المعزولة تماماً والمطابقة مع السيرفر -->
         <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 20px;">
             <button onclick="filterReports('شبيح')" class="tab-btn" style="flex: 1; min-width: 150px; padding: 20px; border-radius: 16px; cursor: pointer; background-color: #1e293b; border: 1px solid #334155; text-align: center;">
                 <span style="display: block; color: #94a3b8; font-size: 12px; margin-bottom: 4px;">فحص تصنيف</span>
@@ -88,11 +88,12 @@
 
                 const reportId = report.id || '';
 
+                // رابط التحميل المباشر الآمن للملف الحقيقي القادم من السيرفر
                 let mediaSection = '';
                 if (report.media_link) {
                     mediaSection = '<div style="background-color: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid #334155; margin-top: 5px;">' +
                                    '<span style="color: #94a3b8; font-size: 13px; display: block; margin-bottom: 4px;">🎞️ دليل مرفوع حقيقي (صورة / فيديو):</span>' +
-                                   '<a href="' + report.media_link + '" download class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs inline-block text-center font-medium transition shadow-sm" style="text-decoration: none; color: white;">اضغط هنا لتحميل ملف الأدلة مباشرة</a>' +
+                                   '<a href="' + report.media_link + '" download class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs inline-block text-center font-medium transition shadow-sm" style="text-decoration: none; color: white;">اضغط هنا لتحميل ملف الأدلة مباشرة</a>' +
                                    '</div>';
                 } else {
                     mediaSection = '<div><strong style="color: #94a3b8; font-size: 13px;">🎞️ الأدلة المرفقة:</strong> <span style="color: #64748b; font-size: 13px;">لم يتم رفع أي ملفات وسائط</span></div>';
@@ -115,7 +116,6 @@
                         '<div style="background-color: #1e293b; padding: 10px; border-radius: 8px; font-size: 12px; color: #cbd5e1; border: 1px solid #334155;">' + (report.details || 'لا توجد تفاصيل إضافية') + '</div>' +
                     '</div>' +
                     '<div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #334155; padding-top: 10px; margin-top: 5px;">' +
-                        '<a href="/report/' + reportId + '" target="_blank" style="background-color: #d97706; padding: 6px 12px; border-radius: 8px; color: white; font-size: 12px; text-decoration: none; font-weight: 500;">طباعة التقرير</a>' +
                         '<form action="/delete-report/' + reportId + '" method="POST" style="margin: 0;" onsubmit="return confirm(\'هل أنت متأكد من حذف هذا التقرير نهائياً؟\');">' +
                             '<button type="submit" style="background-color: #e11d48; padding: 6px 12px; border-radius: 8px; color: white; font-size: 12px; cursor: pointer; border: none; font-weight: 500;">حذف التقرير</button>' +
                         '</form>' +
