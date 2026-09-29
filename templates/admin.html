@@ -154,6 +154,13 @@
                 cardHTML += '<div style="grid-column: span 2;"><span class="info-label">حسابات التواصل له:</span> ' + (report.social_link || 'غير متوفرة') + '</div>';
                 cardHTML += '<div><span class="info-label">الهاتف:</span> ' + (report.phone || 'غير متوفر') + '</div>';
                 cardHTML += '</div>';
+                // كود ذكي لقراءة الوقت والتاريخ وتحويلهما لصيغة مفهومة باللغة العربية
+                let dateText = 'غير متوفر';
+                if (report.created_at) {
+                    const dateObj = report.created_at.seconds ? new Date(report.created_at.seconds * 1000) : new Date(report.created_at);
+                    dateText = dateObj.toLocaleString('ar-EG', { hour12: true });
+                }
+                cardHTML += '<div style="grid-column: span 2; color: #34d399; font-weight: bold; margin-top: 5px;"><span class="info-label">📅 تاريخ ووقت الإرسال:</span> ' + dateText + '</div>';
 
                 // إضافة قسم تاريخ القتال / تفاصيل العمل
                 cardHTML += '<div class="block-section">';
