@@ -97,24 +97,26 @@
 
                 const reportId = report.id || '';
 
+                // معالجة روابط الملفات والصور الحقيقية المرفوعة من السيرفر
                 let mediaSection = '<div><strong class="info-label" style="font-size: 13px;">🎞️ الأدلة المرفقة:</strong> <span style="color: #64748b; font-size: 13px;">لم يتم رفع أي ملفات وسائط</span></div>';
                 if (report.filename && report.filename.trim() !== '') {
                     mediaSection = '<div class="media-box">' +
-                                   '<span class="block-title" style="font-size: 13px; margin-bottom: 6px;">📷 صورة الدليل المرفوعة الحقيقية:</span>' +
-                                   '<img src="' + report.filename + '" style="max-width: 100%; max-height: 160px; border-radius: 6px; margin: 0 auto 10px auto; display: block; border: 1px solid #334155;">' +
-                                   '<a href="' + report.filename + '" download="evidence_file.jpg" class="download-btn">تحميل صورة الدليل للجهاز</a>' +
+                                   '<span class="block-title" style="font-size: 13px; margin-bottom: 6px;">📷 ملف الأدلة المرفوعة (صورة / فيديو):</span>' +
+                                   '<a href="' + report.filename + '" download class="download-btn">تحميل ملف الأدلة الحقيقي للجهاز</a>' +
                                    '</div>';
                 }
 
-                // قراءة دقيقة مبنية على المسميات الفعلية لقاعدة بياناتك الظاهرة في الصورة السابقة
+                // قراءة حقول قاعدة بياناتك الفعلية بدقة فائقة من صورتك المرفقة للفايربيس
                 let cardHTML = '<div class="info-grid">';
-                cardHTML += '<div><span class="info-grid"><span class="info-label">الاسم:</span> ' + (report.suspect_name || 'بدون اسم') + '</span></div>';
-                cardHTML += '<div><span class="info-grid"><span class="info-label">المحافظة:</span> ' + (report.province || 'غير محددة') + '</span></div>';
-                cardHTML += '<div><span class="info-grid"><span class="info-label">الجنسية:</span> ' + (report.nationality || 'سوري') + '</span></div>';
-                cardHTML += '<div><span class="info-grid"><span class="info-label">مكان السكن:</span> ' + (report.current_address || 'غير محدد') + '</span></div>';
+                cardHTML += '<div><span class="info-label">الاسم:</span> ' + (report.suspect_name || 'بدون اسم') + '</div>';
+                cardHTML += '<div><span class="info-label">المحافظة:</span> ' + (report.province || 'غير محددة') + '</div>';
+                cardHTML += '<div><span class="info-label">الجنسية:</span> ' + (report.nationality || 'سوري') + '</div>';
+                cardHTML += '<div><span class="info-label">مكان السكن:</span> ' + (report.current_address || 'غير محدد') + '</div>';
                 cardHTML += '<div style="grid-column: span 2;"><span class="info-label">حسابات التواصل له:</span> ' + (report.social_link || 'غير متوفرة') + '</div>';
                 cardHTML += '<div style="grid-column: span 2;"><span class="info-label">رقم الجوال:</span> <span dir="ltr">' + (report.phone || 'غير متوفر') + '</span></div>';
                 cardHTML += '</div>';
+
+                cardHTML += '<div class="action-bar" style="border-top: none; padding-top: 0; margin-top: 0;"></div>';
 
                 cardHTML += '<div class="block-section">';
                 cardHTML += '<span class="block-title">أين كان يعمل ومع من (سجل الفعال):</span>';
