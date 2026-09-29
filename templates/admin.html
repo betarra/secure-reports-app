@@ -4,365 +4,122 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة تحكم المسؤول - البلاغات الواردة</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-   <style>
-    /* إخفاء محتوى الخانات افتراضياً */
-.category-card .category-content {
-    display: none !important;
-}
-
-/* إظهار محتوى الخانة فقط عند تفعيلها */
-.category-card.active .category-content {
-    display: block !important;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; }
-        body { background-color: #f4f7f6; color: #333; padding: 20px; }
-        
-        .header-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #fff;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .header-bar h1 { font-size: 22px; color: #2c3e50; }
-
-        .controls-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .search-input, .filter-select {
-            padding: 8px 12px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 14px;
-            outline: none;
-        }
-
-        .btn-print {
-            background-color: #1abc9c;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .btn-print:hover { background-color: #16a085; }
-
-        .categories-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-        }
-
-        @media (max-width: 1024px) {
-            .categories-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 600px) {
-            .categories-grid { grid-template-columns: 1fr; }
-        }
-
-        .category-card {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            overflow: hidden;
-            border-top: 4px solid #3498db;
-        }
-
-        .category-header {
-            padding: 15px;
-            background: #fafafa;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-            font-size: 16px;
-            border-bottom: 1px solid #eee;
-        }
-        .category-header:hover { background: #f0f0f0; }
-
-        .badge-count {
-            background: #3498db;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-        }
-
-        .category-content {
-            padding: 15px;
-            display: block;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .report-item {
-            background: #f9f9f9;
-            border: 1px solid #e1e1e1;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 12px;
-            position: relative;
-        }
-        .report-item p { margin: 5px 0; font-size: 13px; }
-
-        .report-img {
-            width: 100%;
-            max-height: 150px;
-            object-fit: cover;
-            border-radius: 4px;
-            margin-top: 8px;
-        }
-
-        .btn-delete {
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            margin-top: 8px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .btn-delete:hover { background-color: #c0392b; }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            width: 400px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .modal-header { font-weight: bold; margin-bottom: 15px; font-size: 18px; display: flex; justify-content: space-between; }
-        .close-modal { cursor: pointer; color: #e74c3c; }
+    <script src="https://cloudflare.com" defer></script>
+    <style>
+        body { background-color: #f8fafc; color: #1e293b; font-family: system-ui, sans-serif; }
+        .tab-btn { transition: all 0.2s ease; }
+        .report-card { border-top: 4px solid; }
     </style>
 </head>
-<body>
-
-    <div class="header-bar">
-        <h1>لوحة تحكم المسؤول - البلاغات الواردة</h1>
-        <div class="controls-group">
-            <input type="text" id="searchInput" class="search-input" placeholder="بحث بالاسم الكامل..." onkeyup="filterReports()">
-            
-            <select id="governorateFilter" class="filter-select" onchange="filterReports()">
-                <option value="">جميع المحافظات</option>
-                <option value="دمشق">دمشق</option>
-                <option value="ريف دمشق">ريف دمشق</option>
-                <option value="حلب">حلب</option>
-                <option value="حمص">حمص</option>
-                <option value="حماة">حماة</option>
-                <option value="إدلب">إدلب</option>
-                <option value="اللاذقية">اللاذقية</option>
-                <option value="طرطوس">طرطوس</option>
-                <option value="دير الزور">دير الزور</option>
-                <option value="الرقة">الرقة</option>
-                <option value="الحسكة">الحسكة</option>
-                <option value="درعا">درعا</option>
-                <option value="السويداء">السويداء</option>
-                <option value="القنيطرة">القنيطرة</option>
-            </select>
-
-            <button class="btn-print" onclick="openPrintModal()"><i class="fa fa-print"></i> طباعة التقارير</button>
-        </div>
-    </div>
-
-    <!-- الخانات الأربع الديناميكية المرتبطة بقاعدة البيانات -->
-    <div class="categories-grid" id="categoriesContainer">
+<body class="bg-slate-50 min-h-screen p-6">
+    <div class="max-w-4xl mx-auto space-y-6">
         
-        <!-- خانة شبيح -->
-        <div class="category-card">
-            <div class="category-header" onclick="toggleCategory(this)">
-                <span>شبيح</span>
-                <span class="badge-count">{{ reports_shabih | length }}</span>
-            </div>
-            <div class="category-content">
-                {% for report in reports_shabih %}
-                <div class="report-item" data-name="{{ report.suspect_name }}" data-gov="{{ report.province }}">
-                    <p><strong>الاسم:</strong> {{ report.suspect_name }}</p>
-                    <p><strong>المحافظة:</strong> {{ report.province }}</p>
-                    <p><strong>الجنسية:</strong> {{ report.nationality }}</p>
-                    <p><strong>مكان السكن:</strong> {{ report.current_address }}</p>
-                    <p><strong>سجل القتال:</strong> {{ report.combat_history }}</p>
-                    <p><strong>رقم الهاتف:</strong> {{ report.phone }}</p>
-                    {% if report.filename %}
-                    <img src="{{ url_for('static', filename='uploads/' + report.filename) }}" class="report-img" alt="صورة البلاغ">
-                    {% endif %}
-                    <form action="{{ url_for('delete_report', report_id=report.id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف هذا البلاغ؟');">
-                        <button type="submit" class="btn-delete"><i class="fa fa-trash"></i> حذف البلاغ</button>
-                    </form>
-                </div>
-                {% else %}
-                <p style="text-align: center; color: #888; font-size: 13px;">لا توجد بلاغات حالياً</p>
-                {% endfor %}
-            </div>
+        <!-- رأس الصفحة الرئيسي -->
+        <div class="flex justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h1 class="text-2xl font-bold text-slate-800">لوحة تحكم المسؤول - البلاغات الواردة</h1>
+            <a href="/" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm">
+                فتح نموذج البلاغ
+            </a>
         </div>
 
-        <!-- خانة تاجر مخدرات -->
-        <div class="category-card">
-            <div class="category-header" onclick="toggleCategory(this)">
-                <span>تاجر مخدرات</span>
-                <span class="badge-count">{{ reports_drugs | length }}</span>
-            </div>
-            <div class="category-content">
-                {% for report in reports_drugs %}
-                <div class="report-item" data-name="{{ report.suspect_name }}" data-gov="{{ report.province }}">
-                    <p><strong>الاسم:</strong> {{ report.suspect_name }}</p>
-                    <p><strong>المحافظة:</strong> {{ report.province }}</p>
-                    <p><strong>الجنسية:</strong> {{ report.nationality }}</p>
-                    <p><strong>مكان السكن:</strong> {{ report.current_address }}</p>
-                    <p><strong>سجل القتال:</strong> {{ report.combat_history }}</p>
-                    <p><strong>رقم الهاتف:</strong> {{ report.phone }}</p>
-                    {% if report.filename %}
-                    <img src="{{ url_for('static', filename='uploads/' + report.filename) }}" class="report-img" alt="صورة البلاغ">
-                    {% endif %}
-                    <form action="{{ url_for('delete_report', report_id=report.id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف هذا البلاغ؟');">
-                        <button type="submit" class="btn-delete"><i class="fa fa-trash"></i> حذف البلاغ</button>
-                    </form>
-                </div>
-                {% else %}
-                <p style="text-align: center; color: #888; font-size: 13px;">لا توجد بلاغات حالياً</p>
-                {% endfor %}
-            </div>
+        <!-- أزرار الخانات والتصنيفات العلوية للتحكم بالعزل -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button onclick="filterReports('شبيح')" class="tab-btn bg-white hover:bg-red-50 border border-slate-200 p-5 rounded-2xl text-center shadow-sm focus:ring-2 focus:ring-red-400">
+                <span class="block text-slate-400 text-xs mb-1">عرض تصنيف</span>
+                <span class="text-lg font-bold text-red-600">شبيح</span>
+            </button>
+            <button onclick="filterReports('تاجر مخدرات')" class="tab-btn bg-white hover:bg-amber-50 border border-slate-200 p-5 rounded-2xl text-center shadow-sm focus:ring-2 focus:ring-amber-400">
+                <span class="block text-slate-400 text-xs mb-1">عرض تصنيف</span>
+                <span class="text-lg font-bold text-amber-600">تاجر مخدرات</span>
+            </button>
+            <button onclick="filterReports('عميل')" class="tab-btn bg-white hover:bg-sky-50 border border-slate-200 p-5 rounded-2xl text-center shadow-sm focus:ring-2 focus:ring-sky-400">
+                <span class="block text-slate-400 text-xs mb-1">عرض تصنيف</span>
+                <span class="text-lg font-bold text-sky-600">عميل</span>
+            </button>
+            <button onclick="filterReports('أخرى / تواصل')" class="tab-btn bg-white hover:bg-emerald-50 border border-slate-200 p-5 rounded-2xl text-center shadow-sm focus:ring-2 focus:ring-emerald-400">
+                <span class="block text-slate-400 text-xs mb-1">عرض تصنيف</span>
+                <span class="text-lg font-bold text-emerald-600">أخرى / تواصل</span>
+            </button>
         </div>
 
-        <!-- خانة عميل -->
-        <div class="category-card">
-            <div class="category-header" onclick="toggleCategory(this)">
-                <span>عميل</span>
-                <span class="badge-count">{{ reports_agent | length }}</span>
-            </div>
-            <div class="category-content">
-                {% for report in reports_agent %}
-                <div class="report-item" data-name="{{ report.suspect_name }}" data-gov="{{ report.province }}">
-                    <p><strong>الاسم:</strong> {{ report.suspect_name }}</p>
-                    <p><strong>المحافظة:</strong> {{ report.province }}</p>
-                    <p><strong>الجنسية:</strong> {{ report.nationality }}</p>
-                    <p><strong>مكان السكن:</strong> {{ report.current_address }}</p>
-                    <p><strong>سجل القتال:</strong> {{ report.combat_history }}</p>
-                    <p><strong>رقم الهاتف:</strong> {{ report.phone }}</p>
-                    {% if report.filename %}
-                    <img src="{{ url_for('static', filename='uploads/' + report.filename) }}" class="report-img" alt="صورة البلاغ">
-                    {% endif %}
-                    <form action="{{ url_for('delete_report', report_id=report.id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف هذا البلاغ؟');">
-                        <button type="submit" class="btn-delete"><i class="fa fa-trash"></i> حذف البلاغ</button>
-                    </form>
+        <!-- منطقة عرض التقارير المعزولة والمفرزة -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 id="categoryTitle" class="text-xl font-bold text-slate-700 mb-6 text-center">الرجاء اختيار تصنيف من الأعلى لعرض بلاغاته المنظمة</h2>
+            
+            <!-- الحاوية العمودية المنظمة للبطاقات -->
+            <div id="cardsContainer" class="space-y-4 max-w-xl mx-auto">
+                <div class="text-center py-8 text-slate-400 text-sm">
+                    انقر على أحد التصنيفات بالأعلى لفتح التقارير الخاصة به بشكل مستقل.
                 </div>
-                {% else %}
-                <p style="text-align: center; color: #888; font-size: 13px;">لا توجد بلاغات حالياً</p>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- خانة أخرى / تواصل -->
-        <div class="category-card">
-            <div class="category-header" onclick="toggleCategory(this)">
-                <span>أخرى / تواصل</span>
-                <span class="badge-count">{{ reports_other | length }}</span>
-            </div>
-            <div class="category-content">
-                {% for report in reports_other %}
-                <div class="report-item" data-name="{{ report.suspect_name }}" data-gov="{{ report.province }}">
-                    <p><strong>الاسم:</strong> {{ report.suspect_name }}</p>
-                    <p><strong>المحافظة:</strong> {{ report.province }}</p>
-                    <p><strong>الجنسية:</strong> {{ report.nationality }}</p>
-                    <p><strong>مكان السكن:</strong> {{ report.current_address }}</p>
-                    <p><strong>سجل القتال:</strong> {{ report.combat_history }}</p>
-                    <p><strong>رقم الهاتف:</strong> {{ report.phone }}</p>
-                    {% if report.filename %}
-                    <img src="{{ url_for('static', filename='uploads/' + report.filename) }}" class="report-img" alt="صورة البلاغ">
-                    {% endif %}
-                    <form action="{{ url_for('delete_report', report_id=report.id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف هذا البلاغ؟');">
-                        <button type="submit" class="btn-delete"><i class="fa fa-trash"></i> حذف البلاغ</button>
-                    </form>
-                </div>
-                {% else %}
-                <p style="text-align: center; color: #888; font-size: 13px;">لا توجد بلاغات حالياً</p>
-                {% endfor %}
             </div>
         </div>
 
     </div>
 
-    <!-- نافذة الطباعة -->
-    <div class="modal" id="printModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span>طباعة التقارير</span>
-                <span class="close-modal" onclick="closePrintModal()">&times;</span>
-            </div>
-            <p style="margin-bottom: 15px; font-size: 14px;">اضغط على زر الطباعة أدناه لطباعة جميع التقارير المعروضة حالياً.</p>
-            <button class="btn-print" style="width: 100%; justify-content: center;" onclick="window.print()">طباعة الآن</button>
-        </div>
-    </div>
+    <!-- الحاوية الآمنة لنقل البيانات ومنع ظهور أي أخطاء حمراء في VS Code -->
+    <div id="temp-data" data-reports='{{ reports | tojson | safe }}' style="display: none;"></div>
 
     <script>
-       function toggleCategory(header) {
-    const card = header.closest('.category-card'); // تحديد البطاقة الأب
-    const isActive = card.classList.contains('active');
-    
-    // إغلاق جميع البطاقات الأخرى أولاً
-    document.querySelectorAll('.category-card').forEach(c => {
-        c.classList.remove('active');
-    });
-    
-    // إذا لم تكن مفتوحة، قم بفتحها
-    if (!isActive) {
-        card.classList.add('active');
-    }
-} 
-        function filterReports() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const selectedGov = document.getElementById('governorateFilter').value;
-            
-            const reports = document.querySelectorAll('.report-item');
-            reports.forEach(report => {
-                const name = report.getAttribute('data-name').toLowerCase();
-                const gov = report.getAttribute('data-gov');
-                
-                const matchesSearch = name.includes(searchTerm);
-                const matchesGov = !selectedGov || gov === selectedGov;
+        // جلب البيانات القادمة من قاعدة البيانات بأمان
+        const dataElement = document.getElementById('temp-data');
+        const allReports = JSON.parse(dataElement.getAttribute('data-reports') || '[]');
 
-                if (matchesSearch && matchesGov) {
-                    report.style.display = 'block';
-                } else {
-                    report.style.display = 'none';
-                }
+        // دالة بناء وعرض البطاقات بشكل منظم وعمودي
+        function renderCards(reportsToDisplay, category) {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
+
+            if (reportsToDisplay.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-slate-400 text-sm">لا توجد بلاغات مسجلة في خانة (' + category + ') حالياً.</div>';
+                return;
+            }
+
+            // تحديد لون الشريط العلوي للبطاقة بناءً على نوع الخانة
+            let borderClass = 'border-slate-400';
+            if (category === 'شبيح') borderClass = 'border-red-500';
+            else if (category === 'تاجر مخدرات') borderClass = 'border-amber-500';
+            else if (category === 'عميل') borderClass = 'border-sky-500';
+            else if (category === 'أخرى / تواصل') borderClass = 'border-emerald-500';
+
+            reportsToDisplay.forEach(function(report) {
+                const card = document.createElement('div');
+                card.className = 'report-card bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-sm space-y-2 ' + borderClass;
+                
+                const reportId = report.id || '';
+
+                // بناء محتوى البطاقة المنظم مع إظهار كافة معلوماتك
+                card.innerHTML = 
+                    '<div class="grid grid-cols-2 gap-2 text-sm text-slate-700">' +
+                        '<div><strong class="text-slate-400">الاسم:</strong> ' + (report.suspect_name || 'غير متوفر') + '</div>' +
+                        '<div><strong class="text-slate-400">المحافظة:</strong> ' + (report.province || 'غير محددة') + '</div>' +
+                        '<div><strong class="text-slate-400">الجنسية:</strong> ' + (report.nationality || 'سوري') + '</div>' +
+                        '<div><strong class="text-slate-400">مكان السكن:</strong> ' + (report.address || 'غير محدد') + '</div>' +
+                    '</div>' +
+                    '<div class="text-sm text-slate-700 border-t border-slate-200/60 pt-2">' +
+                        '<strong class="text-slate-400 block mb-1">سجل الفعال مع المليشيا:</strong>' +
+                        '<div class="bg-white p-3 rounded-lg border border-slate-200 text-xs text-slate-600 leading-relaxed">' + 
+                            (report.details || 'لا توجد تفاصيل إضافية مضافة.') + 
+                        '</div>' +
+                    '</div>' +
+                    '<div class="text-sm text-slate-700">' +
+                        '<strong class="text-slate-400">رقم الهاتف:</strong> <span dir="ltr">' + (report.phone || 'غير متوفر') + '</span>' +
+                    '</div>' +
+                    '<div class="flex justify-end pt-2 border-t border-slate-200/60 gap-3">' +
+                        '<a href="/report/' + reportId + '" target="_blank" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium transition">طباعة / تفاصيل</a>' +
+                        '<form action="/delete-report/' + reportId + '" method="POST" onsubmit="return confirm(\'هل أنت متأكد من حذف هذا البلاغ نهائياً؟\');">' +
+                            '<button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">حذف البلاغ</button>' +
+                        '</form>' +
+                    '</div>';
+                
+                container.appendChild(card);
             });
         }
 
-        function openPrintModal() {
-            document.getElementById('printModal').style.display = 'flex';
-        }
-        function closePrintModal() {
-            document.getElementById('printModal').style.display = 'none';
+        // دالة الفلترة والعزل الكامل للتصنيفات
+        function filterReports(category) {
+            document.getElementById('categoryTitle').innerText = 'التقارير الواردة في خانة: ' + category;
+            const filtered = allReports.filter(function(r) { return r.category === category; });
+            renderCards(filtered, category);
         }
     </script>
 </body>
