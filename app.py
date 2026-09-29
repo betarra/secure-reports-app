@@ -7,7 +7,7 @@ from firebase_admin import credentials, firestore
 app = Flask(__name__)
 app.secret_key = 'super_secret_security_key'
 
-# إعداد مجلد لرفع وحفظ الملفات الحقيقية
+# إعداد مجلد محلي آمن لحفظ الصور والفيديوهات الحقيقية بأي حجم
 UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -24,34 +24,37 @@ except Exception as e:
 def index():
     return render_template('report.html')
 
-# استقبال البلاغات والملفات الحقيقية وحفظها
+# استقبال البلاغات بكافة الحقول الستة المحددة دون نسيان أي حقل
 @app.route('/submit', methods=['POST'])
 def submit_report():
     try:
-        file_path_url = None
-        # التحقق من وجود ملف مرفوع حقيقي
+        file_url = None
+        
+        # معالجة وحفظ الصور والفيديوهات الحقيقية المرفوعة من الأجهزة مباشرة
         if 'evidence_file' in request.files:
             file = request.files['evidence_file']
             if file and file.filename != '':
                 filename = secure_filename(file.filename)
-                # حفظ الملف داخل المجلد المحلي
+                # حفظ الملف بأمان في المجلد المحلي على السيرفر
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                file_path_url = f"/static/uploads/{filename}"
+                file_url = f"/static/uploads/{filename}"
 
+        # تسجيل كافة البيانات الستة المطلوبة بدقة في قاعدة البيانات
         report_data = {
-            'suspect_name': request.form.get('suspect_name'),
-            'category': request.form.get('category'),
-            'province': request.form.get('province'),
-            'work_details': request.form.get('work_details'),
-            'media_link': file_path_url, # تخزين مسار الملف المرفوع الحقيقي
-            'social_link': request.form.get('social_link'),
-            'phone': request.form.get('phone'),
-            'details': request.form.get('details'),
+            'suspect_name': request.form.get('suspect_name'),   # اسم المشتبه به
+            'category': request.form.get('category'),           # أولاً: نوع الجرم
+            'province': request.form.get('province'),           # ثانياً: المحافظة السورية
+            'work_details': request.form.get('work_details'),   # ثالثاً: أين كان يعمل ومع من
+            'media_link': file_url,                             # رابعاً: رابط تحميل الصورة/الفيديو الحقيقي
+            'social_link': request.form.get('social_link'),     # خامساً: رابط التواصل الاجتماعي
+            'phone': request.form.get('phone'),                 # سادساً: رقم جواله
+            'details': request.form.get('details'),             # تفاصيل إضافية
             'created_at': firestore.SERVER_TIMESTAMP
         }
+        
         if db:
             db.collection('reports').add(report_data)
-            flash('تم إرسال البلاغ والملفات بنجاح وبسرية تامة', 'success')
+            flash('تم إرسال البلاغ وكافة المرفقات بنجاح وبسرية تامة', 'success')
     except Exception as e:
         flash(f'حدث خطأ أثناء الإرسال: {str(e)}', 'error')
     
@@ -68,21 +71,22 @@ def admin():
             reports.append(r)
     return render_template('admin.html', reports=reports)
 
-@app.route('/report/<report_id>')
-def report_detail(report_id):
-    report = {}
-    if db:
-        doc = db.collection('reports').document(report_id).get()
-        if doc.exists:
-            report = doc.to_dict()
-            report['id'] = doc.id
-    return render_template('report_detail.html', report=report)
-
 @app.route('/delete-report/<report_id>', methods=['POST'])
 def delete_report(report_id):
     if db:
-        # يمكنك هنا إضافة كود لحذف الملف من المجلد المحلي إن أردت
-        db.collection('reports').document(report_id).delete()
+        # جلب بيانات البلاغ لحذف الملف المرتبط به من السيرفر لتوفير المساحة
+        doc_ref = db.collection('reports').document(report_id)
+        doc = doc_ref.get()
+        if doc.exists:
+            data = doc.to_dict()
+            if data.get('media_link'):
+                try:
+                    local_path = os.path.join(app.root_path, data['media_link'].lstrip('/'))
+                    if os.path.exists(local_path):
+                        os.remove(local_path)
+                except:
+                    pass
+        doc_ref.delete()
     return redirect(url_for('admin'))
 
 if __name__ == '__main__':
