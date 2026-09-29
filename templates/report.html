@@ -26,9 +26,9 @@
             {% endfor %}
         {% endif %}
 
-        <form action="/submit" method="POST" style="display: flex; flex-direction: column; gap: 16px;">
+        <!-- تم إضافة enctype="multipart/form-data" للسماح برفع الملفات الحقيقية -->
+        <form action="/submit" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 16px;">
             
-            <!-- أولاً: اسم المشتبه به ونوع الجرم -->
             <div>
                 <label style="display: block; font-size: 14px; color: #cbd5e1; margin-bottom: 6px;">اسم المشتبه به الكامل:</label>
                 <input type="text" name="suspect_name" required style="width: 100%; padding: 10px; border-radius: 8px; background-color: #0f172a; border: 1px solid #334155; color: white; box-sizing: border-box;">
@@ -44,7 +44,6 @@
                 </select>
             </div>
 
-            <!-- ثانياً: من أي محافظة (قائمة منسدلة كاملة) -->
             <div>
                 <label style="display: block; font-size: 14px; color: #cbd5e1; margin-bottom: 6px;">ثانياً: من أي محافظة؟</label>
                 <select name="province" required style="width: 100%; padding: 10px; border-radius: 8px; background-color: #0f172a; border: 1px solid #334155; color: white; box-sizing: border-box; cursor: pointer;">
@@ -65,31 +64,27 @@
                 </select>
             </div>
 
-            <!-- ثالثاً: أين كان يعمل ومع من -->
             <div>
                 <label style="display: block; font-size: 14px; color: #cbd5e1; margin-bottom: 6px;">ثالثاً: أين كان يعمل؟ ومع من؟ (تفاصيل الجهة والشركاء):</label>
                 <textarea name="work_details" rows="3" required style="width: 100%; padding: 10px; border-radius: 8px; background-color: #0f172a; border: 1px solid #334155; color: white; box-sizing: border-box; resize: none;"></textarea>
             </div>
 
-            <!-- رابعاً: إرفاق رابط صورة أو فيديو -->
+            <!-- رابعاً: إرفاق صورة أو فيديو حقيقي من الجهاز -->
             <div>
-                <label style="display: block; font-size: 14px; color: #cbd5e1; margin-bottom: 6px;">رابعاً: ضع هنا رابط صورة أو فيديو للمشتبه به كدليل (إن وجد):</label>
-                <input type="url" name="media_link" placeholder="https://..." style="width: 100%; padding: 10px; border-radius: 8px; background-color: #0f172a; border: 1px solid #334155; color: white; box-sizing: border-box;" dir="ltr">
+                <label style="display: block; font-size: 14px; color: #cbd5e1; margin-bottom: 6px;">رابعاً: اختر صورة أو فيديو للمشتبه به كدليل من جهازك (إن وجد):</label>
+                <input type="file" name="evidence_file" accept="image/*,video/*" style="width: 100%; padding: 8px; border-radius: 8px; background-color: #0f172a; border: 1px solid #334155; color: #94a3b8; box-sizing: border-box; cursor: pointer;">
             </div>
 
-            <!-- خامساً: رابط موقع تواصل اجتماعي له -->
             <div>
-                <label style="display: block; font-size: 14px; color: #cbd5e1; margin-bottom: 6px;">خامساً: رابط أي موقع تواصل اجتماعي له (فيسبوك/تلغرام إن وجد):</label>
+                <label style="display: block; font-size: 14px; color: #cbd5e1; margin-bottom: 6px;">خامساً: رابط أي موقع تواصل اجتماعي له (إن وجد):</label>
                 <input type="text" name="social_link" placeholder="@username أو رابط الحساب" style="width: 100%; padding: 10px; border-radius: 8px; background-color: #0f172a; border: 1px solid #334155; color: white; box-sizing: border-box;">
             </div>
 
-            <!-- سادساً: رقم جواله -->
             <div>
                 <label style="display: block; font-size: 14px; color: #cbd5e1; margin-bottom: 6px;">سادساً: رقم جواله المتاح (إن وجد):</label>
                 <input type="text" name="phone" style="width: 100%; padding: 10px; border-radius: 8px; background-color: #0f172a; border: 1px solid #334155; color: white; box-sizing: border-box;" dir="ltr">
             </div>
 
-            <!-- تفاصيل إضافية عامة -->
             <div>
                 <label style="display: block; font-size: 14px; color: #cbd5e1; margin-bottom: 6px;">تفاصيل إضافية حول البلاغ:</label>
                 <textarea name="details" rows="3" style="width: 100%; padding: 10px; border-radius: 8px; background-color: #0f172a; border: 1px solid #334155; color: white; box-sizing: border-box; resize: none;"></textarea>
