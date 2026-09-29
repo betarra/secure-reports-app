@@ -6,108 +6,123 @@
     <title>لوحة تحكم المسؤول - البلاغات الواردة</title>
     <script src="https://cloudflare.com" defer></script>
     <style>
-        body { background-color: #f8fafc; color: #1e293b; font-family: system-ui, sans-serif; }
+        body { background-color: #0f172a !important; color: #f1f5f9 !important; font-family: system-ui, sans-serif; }
+        .bg-slate-800 { background-color: #1e293b !important; }
+        .border-slate-700 { border-color: #334155 !important; }
         .tab-btn { transition: all 0.2s ease; }
-        .report-card { border-top: 4px solid; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen p-6">
+<body class="bg-slate-900 text-slate-100 min-h-screen p-6">
     <div class="max-w-4xl mx-auto space-y-6">
         
         <!-- رأس الصفحة الرئيسي -->
-        <div class="flex justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-            <h1 class="text-2xl font-bold text-slate-800">لوحة تحكم المسؤول - البلاغات الواردة</h1>
-            <a href="/" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm">
+        <div class="flex justify-between items-center bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-2xl">
+            <h1 class="text-2xl font-bold text-emerald-400">لوحة تحكم المسؤول - البلاغات الواردة</h1>
+            <a href="/" target="_blank" style="background-color: #059669; padding: 8px 16px; border-radius: 12px; color: white; text-decoration: none; font-size: 14px; font-weight: 500;">
                 فتح نموذج البلاغ
             </a>
         </div>
 
-        <!-- أزرار الخانات والتصنيفات العلوية للتحكم بالعزل -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button onclick="filterReports('شبيح')" class="tab-btn bg-white hover:bg-red-50 border border-slate-200 p-5 rounded-2xl text-center shadow-sm focus:ring-2 focus:ring-red-400">
-                <span class="block text-slate-400 text-xs mb-1">عرض تصنيف</span>
-                <span class="text-lg font-bold text-red-600">شبيح</span>
+        <!-- أزرار التصنيفات المنسقة بستايل احترافي جميل وجذاب -->
+        <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 20px;">
+            <button onclick="filterReports('شبيح')" class="tab-btn" style="flex: 1; min-width: 150px; padding: 20px; border-radius: 16px; cursor: pointer; background-color: #1e293b; border: 1px solid #334155; text-align: center;">
+                <span style="display: block; color: #94a3b8; font-size: 12px; margin-bottom: 4px;">فحص تصنيف</span>
+                <span style="font-size: 18px; font-weight: bold; color: #f87171;">شبيح</span>
             </button>
-            <button onclick="filterReports('تاجر مخدرات')" class="tab-btn bg-white hover:bg-amber-50 border border-slate-200 p-5 rounded-2xl text-center shadow-sm focus:ring-2 focus:ring-amber-400">
-                <span class="block text-slate-400 text-xs mb-1">عرض تصنيف</span>
-                <span class="text-lg font-bold text-amber-600">تاجر مخدرات</span>
+            <button onclick="filterReports('تاجر مخدرات')" class="tab-btn" style="flex: 1; min-width: 150px; padding: 20px; border-radius: 16px; cursor: pointer; background-color: #1e293b; border: 1px solid #334155; text-align: center;">
+                <span style="display: block; color: #94a3b8; font-size: 12px; margin-bottom: 4px;">فحص تصنيف</span>
+                <span style="font-size: 18px; font-weight: bold; color: #fbbf24;">تاجر مخدرات</span>
             </button>
-            <button onclick="filterReports('عميل')" class="tab-btn bg-white hover:bg-sky-50 border border-slate-200 p-5 rounded-2xl text-center shadow-sm focus:ring-2 focus:ring-sky-400">
-                <span class="block text-slate-400 text-xs mb-1">عرض تصنيف</span>
-                <span class="text-lg font-bold text-sky-600">عميل</span>
+            <button onclick="filterReports('لص')" class="tab-btn" style="flex: 1; min-width: 150px; padding: 20px; border-radius: 16px; cursor: pointer; background-color: #1e293b; border: 1px solid #334155; text-align: center;">
+                <span style="display: block; color: #94a3b8; font-size: 12px; margin-bottom: 4px;">فحص تصنيف</span>
+                <span style="font-size: 18px; font-weight: bold; color: #38bdf8;">لص</span>
             </button>
-            <button onclick="filterReports('أخرى / تواصل')" class="tab-btn bg-white hover:bg-emerald-50 border border-slate-200 p-5 rounded-2xl text-center shadow-sm focus:ring-2 focus:ring-emerald-400">
-                <span class="block text-slate-400 text-xs mb-1">عرض تصنيف</span>
-                <span class="text-lg font-bold text-emerald-600">أخرى / تواصل</span>
+            <button onclick="filterReports('آخر')" class="tab-btn" style="flex: 1; min-width: 150px; padding: 20px; border-radius: 16px; cursor: pointer; background-color: #1e293b; border: 1px solid #334155; text-align: center;">
+                <span style="display: block; color: #94a3b8; font-size: 12px; margin-bottom: 4px;">فحص تصنيف</span>
+                <span style="font-size: 18px; font-weight: bold; color: #34d399;">آخر</span>
             </button>
         </div>
 
-        <!-- منطقة عرض التقارير المعزولة والمفرزة -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <h2 id="categoryTitle" class="text-xl font-bold text-slate-700 mb-6 text-center">الرجاء اختيار تصنيف من الأعلى لعرض بلاغاته المنظمة</h2>
+        <!-- منطقة عرض التقارير المفرزة عمودياً بناءً على الخيار المختار -->
+        <div style="margin-top: 25px; padding: 24px; border-radius: 16px; background-color: #1e293b; border: 1px solid #334155;">
+            <h2 id="categoryTitle" style="font-size: 16px; font-weight: bold; color: #34d399; margin-bottom: 20px; text-align: center;">الرجاء اختيار تصنيف من الأعلى لعرض بلاغاته بشكل معزول ومستقل</h2>
             
-            <!-- الحاوية العمودية المنظمة للبطاقات -->
-            <div id="cardsContainer" class="space-y-4 max-w-xl mx-auto">
-                <div class="text-center py-8 text-slate-400 text-sm">
-                    انقر على أحد التصنيفات بالأعلى لفتح التقارير الخاصة به بشكل مستقل.
+            <!-- الحاوية العمودية الذكية للبطاقات المنظمة -->
+            <div id="cardsContainer" style="display: flex; flex-direction: column; gap: 16px; max-width: 600px;
+ margin: 0 auto;">
+                <div style="text-align: center; padding: 32px; color: #64748b; font-size: 14px;">
+                    الصفحة مغلقة حالياً. انقر على أحد الأزرار بالأعلى للفرز التلقائي المباشر للبيانات.
                 </div>
             </div>
         </div>
 
     </div>
 
-    <!-- الحاوية الآمنة لنقل البيانات ومنع ظهور أي أخطاء حمراء في VS Code -->
+    <!-- الحاوية المخفية الآمنة لنقل البيانات البرمجية ومنع أخطاء VS Code نهائياً -->
     <div id="temp-data" data-reports='{{ reports | tojson | safe }}' style="display: none;"></div>
 
     <script>
-        // جلب البيانات القادمة من قاعدة البيانات بأمان
         const dataElement = document.getElementById('temp-data');
         const allReports = JSON.parse(dataElement.getAttribute('data-reports') || '[]');
 
-        // دالة بناء وعرض البطاقات بشكل منظم وعمودي
         function renderCards(reportsToDisplay, category) {
             const container = document.getElementById('cardsContainer');
             container.innerHTML = '';
 
             if (reportsToDisplay.length === 0) {
-                container.innerHTML = '<div class="text-center py-8 text-slate-400 text-sm">لا توجد بلاغات مسجلة في خانة (' + category + ') حالياً.</div>';
+                container.innerHTML = '<div style="text-align: center; padding: 32px; color: #64748b; font-size: 14px;">لا توجد بلاغات مسجلة في خانة (' + category + ') حالياً.</div>';
                 return;
             }
 
-            // تحديد لون الشريط العلوي للبطاقة بناءً على نوع الخانة
-            let borderClass = 'border-slate-400';
-            if (category === 'شبيح') borderClass = 'border-red-500';
-            else if (category === 'تاجر مخدرات') borderClass = 'border-amber-500';
-            else if (category === 'عميل') borderClass = 'border-sky-500';
-            else if (category === 'أخرى / تواصل') borderClass = 'border-emerald-500';
+            let accentColor = '#34d399';
+            if (category === 'شبيح') accentColor = '#f87171';
+            else if (category === 'تاجر مخدرات') accentColor = '#fbbf24';
+            else if (category === 'لص') accentColor = '#38bdf8';
 
             reportsToDisplay.forEach(function(report) {
                 const card = document.createElement('div');
-                card.className = 'report-card bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-sm space-y-2 ' + borderClass;
-                
+                card.style.backgroundColor = '#0f172a';
+                card.style.padding = '20px';
+                card.style.borderRadius = '12px';
+                card.style.border = '1px solid #334155';
+                card.style.borderTop = '4px solid ' + accentColor;
+                card.style.display = 'flex';
+                card.style.flexDirection = 'column';
+                card.style.gap = '10px';
+
                 const reportId = report.id || '';
 
-                // بناء محتوى البطاقة المنظم مع إظهار كافة معلوماتك
+                // فحص وجود دليل مرفق (صورة أو فيديو) لعرض خيار التحميل
+                let mediaSection = '';
+                if (report.media_link) {
+                    mediaSection = '<div style="background-color: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid #334155; margin-top: 5px;">' +
+                                   '<span style="color: #94a3b8; font-size: 13px; display: block; margin-bottom: 4px;">🎞️ دليل مرفق (صورة / فيديو):</span>' +
+                                   '<a href="' + report.media_link + '" target="_blank" style="color: #38bdf8; font-size: 13px; font-weight: bold; text-decoration: underline; display: inline-block;">اضغط هنا لفتح وتحميل ملف الدليل</a>' +
+                                   '</div>';
+                } else {
+                    mediaSection = '<div><strong style="color: #94a3b8; font-size: 13px;">🎞️ الأدلة المرفقة:</strong> <span style="color: #64748b; font-size: 13px;">لم يتم إرفاق رابط وسائط</span></div>';
+                }
+
                 card.innerHTML = 
-                    '<div class="grid grid-cols-2 gap-2 text-sm text-slate-700">' +
-                        '<div><strong class="text-slate-400">الاسم:</strong> ' + (report.suspect_name || 'غير متوفر') + '</div>' +
-                        '<div><strong class="text-slate-400">المحافظة:</strong> ' + (report.province || 'غير محددة') + '</div>' +
-                        '<div><strong class="text-slate-400">الجنسية:</strong> ' + (report.nationality || 'سوري') + '</div>' +
-                        '<div><strong class="text-slate-400">مكان السكن:</strong> ' + (report.address || 'غير محدد') + '</div>' +
+                    '<div style="font-size: 14px; color: white; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">' +
+                        '<div><strong style="color: #94a3b8;">الاسم:</strong> ' + (report.suspect_name || 'بدون اسم') + '</div>' +
+                        '<div><strong style="color: #94a3b8;">المحافظة:</strong> ' + (report.province || 'غير محددة') + '</div>' +
+                        '<div style="grid-column: span 2;"><strong style="color: #94a3b8;">حسابات التواصل له:</strong> ' + (report.social_link || 'غير متوفرة') + '</div>' +
+                        '<div style="grid-column: span 2;"><strong style="color: #94a3b8;">رقم الجوال:</strong> <span dir="ltr">' + (report.phone || 'غير متوفر') + '</span></div>' +
                     '</div>' +
-                    '<div class="text-sm text-slate-700 border-t border-slate-200/60 pt-2">' +
-                        '<strong class="text-slate-400 block mb-1">سجل الفعال مع المليشيا:</strong>' +
-                        '<div class="bg-white p-3 rounded-lg border border-slate-200 text-xs text-slate-600 leading-relaxed">' + 
-                            (report.details || 'لا توجد تفاصيل إضافية مضافة.') + 
-                        '</div>' +
+                    '<div style="border-top: 1px solid #334155; pt-2; font-size: 14px;">' +
+                        '<strong style="color: #94a3b8; display: block; margin-bottom: 4px;">أين كان يعمل ومع من:</strong>' +
+                        '<div style="background-color: #1e293b; padding: 10px; border-radius: 8px; font-size: 12px; color: #cbd5e1; border: 1px solid #334155;">' + (report.work_details || 'لا توجد تفاصيل جهة عمل') + '</div>' +
                     '</div>' +
-                    '<div class="text-sm text-slate-700">' +
-                        '<strong class="text-slate-400">رقم الهاتف:</strong> <span dir="ltr">' + (report.phone || 'غير متوفر') + '</span>' +
+                    mediaSection + 
+                    '<div style="font-size: 14px;">' +
+                        '<strong style="color: #94a3b8; display: block; margin-bottom: 4px;">تفاصيل إضافية حول البلاغ:</strong>' +
+                        '<div style="background-color: #1e293b; padding: 10px; border-radius: 8px; font-size: 12px; color: #cbd5e1; border: 1px solid #334155;">' + (report.details || 'لا توجد تفاصيل إضافية') + '</div>' +
                     '</div>' +
-                    '<div class="flex justify-end pt-2 border-t border-slate-200/60 gap-3">' +
-                        '<a href="/report/' + reportId + '" target="_blank" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium transition">طباعة / تفاصيل</a>' +
-                        '<form action="/delete-report/' + reportId + '" method="POST" onsubmit="return confirm(\'هل أنت متأكد من حذف هذا البلاغ نهائياً؟\');">' +
-                            '<button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">حذف البلاغ</button>' +
+                    '<div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #334155; padding-top: 10px; margin-top: 5px;">' +
+                        '<a href="/report/' + reportId + '" target="_blank" style="background-color: #d97706; padding: 6px 12px; border-radius: 8px; color: white; font-size: 12px; text-decoration: none; font-medium: 500;">زر طباعة</a>' +
+                        '<form action="/delete-report/' + reportId + '" method="POST" style="margin: 0;" onsubmit="return confirm(\'هل أنت متأكد من حذف هذا التقرير نهائياً؟\');">' +
+                            '<button type="submit" style="background-color: #e11d48; padding: 6px 12px; border-radius: 8px; color: white; font-size: 12px; cursor: pointer; border: none; font-medium: 500;">زر حذف</button>' +
                         '</form>' +
                     '</div>';
                 
@@ -115,7 +130,6 @@
             });
         }
 
-        // دالة الفلترة والعزل الكامل للتصنيفات
         function filterReports(category) {
             document.getElementById('categoryTitle').innerText = 'التقارير الواردة في خانة: ' + category;
             const filtered = allReports.filter(function(r) { return r.category === category; });
