@@ -6,19 +6,9 @@
     <title>منصة البلاغات السرية الآمنة</title>
     <script src="https://cloudflare.com" defer></script>
     <style>
-        body { 
-            background-color: #0f172a !important; 
-            color: #f1f5f9 !important; 
-            font-family: system-ui, -apple-system, sans-serif; 
-        }
-        .form-container {
-            width: 100%;
-            max-width: 540px;
-            margin: 0 auto;
-        }
-        input, select, textarea {
-            font-size: 16px !important;
-        }
+        body { background-color: #0f172a !important; color: #f1f5f9 !important; font-family: system-ui, -apple-system, sans-serif; }
+        .form-container { width: 100%; max-width: 540px; margin: 0 auto; }
+        input, select, textarea { font-size: 16px !important; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-6 flex items-center justify-center">
@@ -38,7 +28,8 @@
             {% endfor %}
         {% endif %}
 
-        <form action="/submit" method="POST" style="display: flex; flex-direction: column; gap: 16px;">
+        <!-- تم تفعيل enctype لدعم رفع الصور والفيديوهات الحقيقية مباشرة من الجوال -->
+        <form action="/submit" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 16px;">
             
             <div>
                 <label style="display: block; font-size: 14px; color: #cbd5e1; margin-bottom: 6px; font-weight: 500;">اسم المشتبه به الكامل:</label>
@@ -81,9 +72,14 @@
             </div>
 
             <div>
-                <label style="display: block; font-size: 14px; color: #cbd5e1; margin-bottom: 6px; font-weight: 500;">رابعاً: اختر صورة للمشتبه به كدليل من جهازك (إن وجد):</label>
-                <input type="file" id="fileInput" accept="image/*" style="width: 100%; padding: 10px; border-radius: 8px; background-color: #0f172a; border: 1px solid #334155; color: #94a3b8; box-sizing: border-box; cursor: pointer;">
-                <input type="hidden" name="media_data" id="mediaData">
+                <label style="display: block; font-size: 14px; color: #cbd5e1; margin-bottom: 6px; font-weight: 500;">مكان السكن الحالي للمشتبه به:</label>
+                <input type="text" name="current_address" style="width: 100%; padding: 12px; border-radius: 8px; background-color: #0f172a; border: 1px solid #334155; color: white; box-sizing: border-box;">
+            </div>
+
+            <!-- حقل رفع ملف حقيقي (صورة أو فيديو) مباشرة من جهاز المستخدم -->
+            <div>
+                <label style="display: block; font-size: 14px; color: #cbd5e1; margin-bottom: 6px; font-weight: 500;">رابعاً: اختر صورة أو فيديو للمشتبه به كدليل من جهازك (إن وجد):</label>
+                <input type="file" name="evidence_file" accept="image/*,video/*" style="width: 100%; padding: 10px; border-radius: 8px; background-color: #0f172a; border: 1px solid #334155; color: #94a3b8; box-sizing: border-box; cursor: pointer;">
             </div>
 
             <div>
@@ -101,65 +97,10 @@
                 <textarea name="details" rows="3" style="width: 100%; padding: 12px; border-radius: 8px; background-color: #0f172a; border: 1px solid #334155; color: white; box-sizing: border-box; resize: none;"></textarea>
             </div>
 
-            <button type="submit" id="submitBtn" style="width: 100%; background-color: #059669; color: white; padding: 14px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; margin-top: 10px; font-size: 16px;">
+            <button type="submit" style="width: 100%; background-color: #059669; color: white; padding: 14px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; margin-top: 10px; font-size: 16px;">
                 إرسال البلاغ الآن
             </button>
         </form>
     </div>
-
-    <script>
-        const fileInput = document.getElementById('fileInput');
-        const submitBtn = document.getElementById('submitBtn');
-
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            // قفل الزر وتغيير حالته لحين اكتمال عملية المعالجة الآمنة
-            submitBtn.disabled = true;
-            submitBtn.style.backgroundColor = '#4b5563';
-            submitBtn.innerText = 'جاري معالجة وضغط الصورة بسرية...';
-
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = function(event) {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    
-                    const MAX_WIDTH = 500;
-                    const MAX_HEIGHT = 500;
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > height) {
-                        if (width > MAX_WIDTH) {
-                            height *= MAX_WIDTH / width;
-                            width = MAX_WIDTH;
-                        }
-                    } else {
-                        if (height > MAX_HEIGHT) {
-                            width *= MAX_HEIGHT / height;
-                            height = MAX_HEIGHT;
-                        }
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5);
-                    document.getElementById('mediaData').value = compressedBase64;
-
-                    // إعادة تفعيل الزر فور انتهاء الضغط بنجاح
-                    submitBtn.disabled = false;
-                    submitBtn.style.backgroundColor = '#059669';
-                    submitBtn.innerText = 'إرسال البلاغ الآن';
-                }
-            }
-        });
-    </script>
 </body>
 </html>
