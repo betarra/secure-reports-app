@@ -17,20 +17,13 @@ cloudinary.config(
     api_secret = os.environ.get('CLOUDINARY_API_SECRET', 'fjOT4UA6rXBomUIJK5xP1RSEq5w') # سيعمل محلياً وسحابياً
 )
 
-# تهيئة Firebase Firestore 
-firebase_config = os.environ.get('FIREBASE_KEY_JSON')
-
+# تهيئة Firebase Firestore (تقرأ الملف السري مباشرة على Render والمحلي معاً)
 try:
-    if firebase_config:
-        cred_dict = json.loads(firebase_config)
-        cred = credentials.Certificate(cred_dict)
-    else:
-        cred = credentials.Certificate('firebase_key.json')
-    
+    cred = credentials.Certificate('firebase_key.json')
     if not firebase_admin._apps:
         firebase_admin.initialize_app(cred)
     db = firestore.client()
-    print("🚀 تم الاتصال بـ Firebase بنجاح!")
+    print("🚀 تم الاتصال بـ Firebase بنجاح تام!")
 except Exception as e:
     print(f"❌ فشل الاتصال بـ Firebase: {str(e)}")
     db = None
